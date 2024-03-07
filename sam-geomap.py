@@ -34,10 +34,14 @@ class FileManager:
         self.planet_data = planet_data
         self.input_planet = data_location+planet_data
         self.prep_planet = None
-        self.gray_3band = None
-        self.ave_band = None
-        self.ndvi_band = None
-        self.ndwi_band = None
+        self.rgb_3band = None
+        self.ave_3band = None
+        self.ndvi_3band = None
+        self.ndwi_3band = None
+        self.rgb_3band_gaussian = None
+        self.ave_3band_gaussian = None
+        self.ndvi_3band_gaussian = None
+        self.ndwi_3band_gaussian = None
 
        
     @staticmethod
@@ -66,15 +70,14 @@ class FileManager:
 
         #Planet
         self.prep_planet= self.data_location+'Planet_crop_EPSG_4326.tif'
-        self.three_band_planet=self.ML_location+self.location+'_EPSG_4326_3band.tif'
-        self.gaussian_ave_planet=self.data_location+'Planet_ave_gauss.tif'
-        #self.gaussian_warp_planet= self.data_location+'Planet_ave_gauss_warp.tif'
-        #self.gaussian_crop_planet= self.data_location+'_EPSG_4326_Planet_Gaussian_32.tif'
-        self.gaussian_three_band_planet=self.ML_location+self.location+'_EPSG_4326_Planet_Gaussian.tif'
-        self.gray_3band = self.ML_location+self.location+'_EPSG_4326_Planet_rgb.tif'
-        self.ave_band = self.ML_location+self.location+'_EPSG_4326_lanet_ave.tif'
-        self.ndvi_band = self.ML_location+self.location+'_EPSG_4326_Planet_ndvi.tif'
-        self.ndwi_band = self.ML_location+self.location+'_EPSG_4326_Planet_ndwi.tif'
+        self.rgb_3band = self.ML_location+self.location+'_EPSG_4326_Planet_rgb.tif'
+        self.ave_3band = self.ML_location+self.location+'_EPSG_4326_lanet_ave.tif'
+        self.ndvi_3band = self.ML_location+self.location+'_EPSG_4326_Planet_ndvi.tif'
+        self.ndwi_3band = self.ML_location+self.location+'_EPSG_4326_Planet_ndwi.tif'
+        self.rgb_3band_gaussian = self.ML_location+self.location+'_EPSG_4326_Planet_rgb_Gaussian.tif'
+        self.ave_3band_gaussian = self.ML_location+self.location+'_EPSG_4326_lanet_ave_Gaussian.tif'
+        self.ndvi_3band_gaussian = self.ML_location+self.location+'_EPSG_4326_Planet_ndvi_Gaussian.tif'
+        self.ndwi_3band_gaussian = self.ML_location+self.location+'_EPSG_4326_Planet_ndwi_Gaussian.tif'
 
 
 class RasterManager:
@@ -194,14 +197,16 @@ class RasterManager:
         prep_data1(self.file_manager.gaussian_dem, self.file_manager.prep_gaussian_dem, self.bounds)
     
 class PlanetManager:
-    def __init__(self, file_manager):
+    def __init__(self, file_manager,raster_manager):
         self.file_manager = file_manager
+        self.raster_manager = raster_manager
         self.b1 = None
         self.b2 = None
         self.b3 = None
         self.b4 = None
         self.raster_src = None
         self.bounds = None
+        self.gray_3band = None
     
     def get_bounds(self)
         with rasterio.open(self.file_manager.input_planet) as src:
@@ -210,12 +215,12 @@ class PlanetManager:
             self.bounds = src.bounds
         return self.bounds
     
-    def prep_planet_data(input_raster,output_raster, bounds):
-        warp_raster(input_raster, input_raster[:-len(".tif")]+'warp.tif')
-        crop_raster(input_raster[:-len(".tif")]+'warp.tif', output_raster,bounds)
+    def prep_planet_data(self):
+        warp_raster(self.file_manager.input_planet, self.file_manager.input_planet[:-len(".tif")]+'warp.tif')
+        crop_raster(self.file_manager.input_planet[:-len(".tif")]+'warp.tif', self.file_manager.prep_planet,self.bounds)
 
     def make_three_band_planet(self):
-        with rasterio.open(image_path) as src:
+        with rasterio.open(self.file_manager.prep_planet) as src:
         # Read the image bands (assuming it's a 3-band RGB image)
             self.b1 = src.read(3)
             self.b2 = src.read(2)
@@ -226,27 +231,34 @@ class PlanetManager:
         profile = src.profile
         profile.update(count=3, dtype=rasterio.uint16, nodata=0.1)
 
-        gray_3band = np.stack((b1,b2,b3), axis=0)
+        self.rgb_3band = np.stack((self.b1,self.b2,self.b3), axis=0)
 
-        with rasterio.open(out_image_path+'Planet_rgb.tif', 'w', **profile) as dst:
-            dst.write(gray_3band)
+        with rasterio.open(self.file_manager.rgb_3band, 'w', **profile) as dst:
+            dst.write(self.rgb_3band)
 
-        ave_band = (b1+b2+b3)/3
-        gray_3band = np.stack((ave_band,ave_band,ave_band), axis=0)
+        ave_band = (self.b1+self.b2+self.b3)/3
+        self.ave_3band = np.stack((ave_band,ave_band,ave_band), axis=0)
 
-        with rasterio.open(out_image_path+'Planet_ave.tif', 'w', **profile) as dst:
-            dst.write(gray_3band)
+        with rasterio.open(self.file_manager.ave_3band, 'w', **profile) as dst:
+            dst.write(self.ave_3band)
 
-        ndvi_band = (b4-b1)/(b4+b1)
-        gray_3band = np.stack((ndvi_band,ndvi_band,ndvi_band), axis=0)
+        ndvi_band = (self.b4-self.b1)/(self.b4+self.b1)
+        self.ndvi_3band = np.stack((ndvi_band,ndvi_band,ndvi_band), axis=0)
 
-        with rasterio.open(out_image_path+'Planet_ndvi.tif', 'w', **profile) as dst:
-            dst.write(gray_3band)
+        with rasterio.open(self.file_manager.ndvi_3band, 'w', **profile) as dst:
+            dst.write(self.ndvi_3band)
 
-        ndwi_band = (b2-b4)/(b2+b4)
-        gray_3band = np.stack((ndwi_band,ndwi_band,ndwi_band), axis=0)
+        ndwi_band = (self.b2-self.b4)/(self.b2+self.b4)
+        self.ndwi_3band = np.stack((ndwi_band,ndwi_band,ndwi_band), axis=0)
 
-        with rasterio.open(out_image_path+'Planet_ndwi.tif', 'w', **profile) as dst:
-            dst.write(gray_3band)
+        with rasterio.open(self.file_manager.ndwi_3band, 'w', **profile) as dst:
+            dst.write(self.ndwi_3band)
+    
+    def planet_gaussian(self):
+        self.raster_manager.gaussian_filter(self.file_manager.rgb_3band,self.file_manager.rgb_3band_gaussian,5)
+        self.raster_manager.gaussian_filter(self.file_manager.ave_3band,self.file_manager.ave_3band_gaussian,5)
+        self.raster_manager.gaussian_filter(self.file_manager.ndvi_3band,self.file_manager.ndvi_3band_gaussian,5)
+        self.raster_manager.gaussian_filter(self.file_manager.ndwi_3band,self.file_manager.ndwi_3band_gaussian,5)
+        
 
     
