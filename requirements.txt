@@ -1,0 +1,8 @@
+
+numpy
+leafmap
+rasterio
+geopandas
+GDAL
+matplotlib
+scipy
