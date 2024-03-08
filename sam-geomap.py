@@ -96,14 +96,14 @@ class RasterManager:
         self.raster_src = None
         self.bounds=None
     
-    def get_bounds(self)
+    def get_bounds(self):
         with rasterio.open(self.file_manager.input_dem_file) as src:
             self.raster_src = src
             # Get bounds of the raster
             self.bounds = src.bounds
         return self.bounds
 
-    def calculate_topo_derivs(self,azimuth=315, altitude=45)
+    def calculate_topo_derivs(self,azimuth=315, altitude=45):
         gdal.DEMProcessing(self.file_manager.output_hillshade_file, self.file_manager.input_dem_file, "hillshade", azimuth=str(azimuth), altitude=str(altitude))
         gdal.DEMProcessing(self.file_manager.output_roughness_file, self.file_manager.input_dem_file, "roughness")
         gdal.DEMProcessing(self.file_manager.output_slope_file, self.file_manager.input_dem_file, "slope")
@@ -218,7 +218,7 @@ class PlanetManager:
         self.bounds = None
         self.gray_3band = None
     
-    def get_bounds(self)
+    def get_bounds(self):
         with rasterio.open(self.file_manager.input_planet) as src:
             self.raster_src = src
             # Get bounds of the raster
