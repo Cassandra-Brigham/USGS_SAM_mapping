@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from scipy.ndimage import gaussian_filter
 
 class FileManager:
-    def __init__(self, folder, location, data_location, dem_name, planet_data):
+    def __init__(self, folder, location, data_location, dem_name, planet_data, image_type):
         self.folder = folder
         self.location=location
         self.dem_name = dem_name
@@ -42,6 +42,7 @@ class FileManager:
         self.ave_3band_gaussian = None
         self.ndvi_3band_gaussian = None
         self.ndwi_3band_gaussian = None
+        self.image_type = image_type
 
        
     @staticmethod
@@ -78,6 +79,15 @@ class FileManager:
         self.ave_3band_gaussian = self.ML_location+self.location+'_EPSG_4326_lanet_ave_Gaussian.tif'
         self.ndvi_3band_gaussian = self.ML_location+self.location+'_EPSG_4326_Planet_ndvi_Gaussian.tif'
         self.ndwi_3band_gaussian = self.ML_location+self.location+'_EPSG_4326_Planet_ndwi_Gaussian.tif'
+
+        #Prompts
+            # Single foreground
+            # Multiple foreground
+            # Multiple background
+
+        #Masks
+            # Single point prompt
+            # Multiple point prompts
 
 
 class RasterManager:
@@ -216,11 +226,12 @@ class PlanetManager:
         return self.bounds
     
     def prep_planet_data(self):
-        warp_raster(self.file_manager.input_planet, self.file_manager.input_planet[:-len(".tif")]+'warp.tif')
-        crop_raster(self.file_manager.input_planet[:-len(".tif")]+'warp.tif', self.file_manager.prep_planet,self.bounds)
+        self.raster_manager.warp_raster(self.file_manager.input_planet, self.file_manager.input_planet[:-len(".tif")]+'warp.tif')
+        self.raster_manager.crop_raster(self.file_manager.input_planet[:-len(".tif")]+'warp.tif', self.file_manager.prep_planet,self.bounds)
 
     def make_three_band_planet(self):
         with rasterio.open(self.file_manager.prep_planet) as src:
+
         # Read the image bands (assuming it's a 3-band RGB image)
             self.b1 = src.read(3)
             self.b2 = src.read(2)
@@ -259,6 +270,3 @@ class PlanetManager:
         self.raster_manager.gaussian_filter(self.file_manager.ave_3band,self.file_manager.ave_3band_gaussian,5)
         self.raster_manager.gaussian_filter(self.file_manager.ndvi_3band,self.file_manager.ndvi_3band_gaussian,5)
         self.raster_manager.gaussian_filter(self.file_manager.ndwi_3band,self.file_manager.ndwi_3band_gaussian,5)
-        
-
-    
