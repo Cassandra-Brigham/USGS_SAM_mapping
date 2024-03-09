@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from scipy.ndimage import gaussian_filter
 
 class FileManager:
-    def __init__(self, folder, location, data_location, dem_name, planet_data, image_type):
+    def __init__(self, folder, location, data_location, dem_name, planet_data, unit, filetype):
         self.folder = folder
         self.location=location
         self.dem_name = dem_name
@@ -42,7 +42,8 @@ class FileManager:
         self.ave_3band_gaussian = None
         self.ndvi_3band_gaussian = None
         self.ndwi_3band_gaussian = None
-        self.image_type = image_type
+        self.unit=unit
+        self.filetype=filetype
 
        
     @staticmethod
@@ -82,12 +83,51 @@ class FileManager:
 
         #Prompts
             # Single foreground
+        self.single_foreground_prompt = self.prompts_path+self.location+'_'+self.unit+'_SingleForeground'+self.filetype
             # Multiple foreground
+        self.multiple_foreground_prompts = self.prompts_path+self.location+'_'+self.unit+'_MultipleForeground'+self.filetype
             # Multiple background
+        self.multiple_background_prompts = self.prompts_path+self.location+'_'+self.unit+'_MultipleBackground'+self.filetype
 
         #Masks
             # Single point prompt
+                #Topo
+        self.mask_single_dem = self.folder+self.location+'/ML_output/'+self.location+'_mask_single_'+'_dem_'+'_'+self.unit+'.tif'
+        self.mask_single_hillshade = self.folder+self.location+'/ML_output/'+self.location+'_mask_single_'+'_hillshade_'+'_'+self.unit+'.tif'
+        self.mask_single_roughness = self.folder+self.location+'/ML_output/'+self.location+'_mask_single_'+'_roughness_'+'_'+self.unit+'.tif'
+        self.mask_single_slope = self.folder+self.location+'/ML_output/'+self.location+'_mask_single_'+'_slope_'+'_'+self.unit+'.tif'
+        self.mask_single_dem_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_single_'+'_dem_gaussian_'+'_'+self.unit+'.tif'
+        self.mask_single_hillshade_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_single_'+'_hillshade_gaussian_'+'_'+self.unit+'.tif'
+        self.mask_single_roughness_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_single_'+'_roughness_gaussian_'+'_'+self.unit+'.tif'
+        self.mask_single_slope_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_single_'+'_slope_gaussian_'+'_'+self.unit+'.tif'
+                #Planet
+        self.mask_single_rgb_3band = self.folder+self.location+'/ML_output/'+self.location+'_mask_single_'+'_rgb_3band_'+'_'+self.unit+'.tif'
+        self.mask_single_ave_3band = self.folder+self.location+'/ML_output/'+self.location+'_mask_single_'+'_ave_3band_'+'_'+self.unit+'.tif'
+        self.mask_single_ndvi_3band = self.folder+self.location+'/ML_output/'+self.location+'_mask_single_'+'_ndvi_3ban_'+'_'+self.unit+'.tif'
+        self.mask_single_ndwi_3band = self.folder+self.location+'/ML_output/'+self.location+'_mask_single_'+'_ndwi_3band_'+'_'+self.unit+'.tif'
+        self.mask_single_rgb_3band_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_single_'+'_rgb_3band_gaussian_'+'_'+self.unit+'.tif'
+        self.mask_single_ave_3band_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_single_'+'_ave_3band_gaussian_'+'_'+self.unit+'.tif'
+        self.mask_single_ndvi_3band_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_single_'+'_ndvi_3band_gaussian_'+'_'+self.unit+'.tif'
+        self.mask_single_ndwi_3band_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_single_'+'_ndwi_3band_gaussian_'+'_'+self.unit+'.tif'
             # Multiple point prompts
+                #Topo
+        self.mask_multiple_dem = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_dem_'+'_'+self.unit+'.tif'
+        self.mask_multiple_hillshade = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_hillshade _'+'_'+self.unit+'.tif'
+        self.mask_multiple_roughness = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_roughness_'+'_'+self.unit+'.tif'
+        self.mask_multiple_slope = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_slope_'+'_'+self.unit+'.tif'
+        self.mask_multiple_dem_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_dem_gaussian_'+'_'+self.unit+'.tif'
+        self.mask_multiple_hillshade_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_hillshade_gaussian_'+'_'+self.unit+'.tif'
+        self.mask_multiple_roughness_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_roughness_gaussian_'+'_'+self.unit+'.tif'
+        self.mask_multiple_slope_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_slope_gaussian_'+'_'+self.unit+'.tif'
+                #Planet
+        self.mask_multiple_rgb_3band = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_rgb_3band_'+'_'+self.unit+'.tif'
+        self.mask_multiple_ave_3band = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_ave_3band_'+'_'+self.unit+'.tif'
+        self.mask_multiple_ndvi_3band = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_ndvi_3band_'+'_'+self.unit+'.tif'
+        self.mask_multiple_ndwi_3band = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_ndwi_3band_'+'_'+self.unit+'.tif'
+        self.mask_multiple_rgb_3band_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_rgb_3band_gaussian_'+'_'+self.unit+'.tif'
+        self.mask_multiple_ave_3band_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_ave_3band_gaussian_'+'_'+self.unit+'.tif'
+        self.mask_multiple_ndvi_3band_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_ndvi_3band_gaussian_'+'_'+self.unit+'.tif'
+        self.mask_multiple_ndwi_3band_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_ndwi_3band_gaussian_'+'_'+self.unit+'.tif'
 
 
 class RasterManager:
@@ -270,3 +310,15 @@ class PlanetManager:
         self.raster_manager.gaussian_filter(self.file_manager.ave_3band,self.file_manager.ave_3band_gaussian,5)
         self.raster_manager.gaussian_filter(self.file_manager.ndvi_3band,self.file_manager.ndvi_3band_gaussian,5)
         self.raster_manager.gaussian_filter(self.file_manager.ndwi_3band,self.file_manager.ndwi_3band_gaussian,5)
+
+class ImplementingSAM:
+    def __init__(self, file_manager)
+        self.file_manager = file_manager
+        self.sam=None
+    def initiate_sam(self):
+        self.sam = SamGeo(
+        model_type="vit_h",
+        automatic=False,
+        sam_kwargs={"points_per_side": 12}
+    )
+    
