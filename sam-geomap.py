@@ -312,13 +312,13 @@ class PlanetManager:
         self.raster_manager.gaussian_filter(self.file_manager.ndwi_3band,self.file_manager.ndwi_3band_gaussian,5)
 
 class ImplementingSAM:
-    def __init__(self, file_manager)
+    def __init__(self, file_manager):
         self.file_manager = file_manager
         self.sam=None
     def initiate_sam(self):
         self.sam = SamGeo(
         model_type="vit_h",
         automatic=False,
-        sam_kwargs={"points_per_side": 12}
+        sam_kwargs={"points_per_side": 32}
     )
     
