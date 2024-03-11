@@ -49,14 +49,14 @@ class FileManager:
     def create_directories (self):
 
         def create_writable_directory(directory_path):
-        try:
-            # Create a new directory with write permissions (0o777 gives full permissions)
-            os.makedirs(directory_path, mode=0o777)
-            print("Directory created successfully.")
-            return True
-        except OSError as e:
-            print(f"Failed to create directory: {e}")
-            return False
+            try:
+                # Create a new directory with write permissions (0o777 gives full permissions)
+                os.makedirs(directory_path, mode=0o777)
+                print("Directory created successfully.")
+                return True
+            except OSError as e:
+                print(f"Failed to create directory: {e}")
+                return False
 
         create_writable_directory(self.ML_location)
         create_writable_directory(self.folder+self.location+'/ML_output/')
@@ -205,11 +205,11 @@ class RasterManager:
             with rasterio.open(out_image_path, 'w', **profile) as dst:
                 dst.write(gray_3band)
     
-    @staticmethod
-    def prep_data1(input_raster, output_raster, bounds):
-        warp_raster(input_raster, input_raster[:-len(".tif")]+'_warp.tif')
-        crop_raster(input_raster[:-len(".tif")]+'_warp.tif',input_raster[:-len(".tif")]+'_crop.tif',bounds)
-        make_three_band_image(input_raster[:-len(".tif")]+'_crop.tif', output_raster)
+    
+    def prep_data1(self, input_raster, output_raster, bounds):
+        self.warp_raster(input_raster, input_raster[:-len(".tif")]+'_warp.tif')
+        self.crop_raster(input_raster[:-len(".tif")]+'_warp.tif',input_raster[:-len(".tif")]+'_crop.tif',bounds)
+        self.make_three_band_image(input_raster[:-len(".tif")]+'_crop.tif', output_raster)
 
     @staticmethod
     def apply_gaussian_filter(input_raster, output_raster, input_scale):
@@ -245,14 +245,14 @@ class RasterManager:
         output_dataset = None
 
     def gaussian_topo_data(self):
-        apply_gaussian_filter(self.file_manager.input_dem_file, self.file_manager.gaussian_dem, 5)
+        self.apply_gaussian_filter(self.file_manager.input_dem_file, self.file_manager.gaussian_dem, 5)
     
     def prep_topo_data(self):
-        prep_data1(self.file_manager.input_dem_file, self.file_manager.prep_dem, self.bounds)
-        prep_data1(self.file_manager.hillshade, self.file_manager.prep_hillshade, self.bounds)
-        prep_data1(self.file_manager.roughness, self.file_manager.prep_roughness, self.bounds)
-        prep_data1(self.file_manager.slope, self.file_manager.prep_slope, self.bounds)
-        prep_data1(self.file_manager.gaussian_dem, self.file_manager.prep_gaussian_dem, self.bounds)
+        self.prep_data1(self.file_manager.input_dem_file, self.file_manager.prep_dem, self.bounds)
+        self.prep_data1(self.file_manager.hillshade, self.file_manager.prep_hillshade, self.bounds)
+        self.prep_data1(self.file_manager.roughness, self.file_manager.prep_roughness, self.bounds)
+        self.prep_data1(self.file_manager.slope, self.file_manager.prep_slope, self.bounds)
+        self.prep_data1(self.file_manager.gaussian_dem, self.file_manager.prep_gaussian_dem, self.bounds)
     
 class PlanetManager:
     def __init__(self, file_manager,raster_manager):
