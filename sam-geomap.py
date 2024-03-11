@@ -249,9 +249,9 @@ class RasterManager:
     
     def prep_topo_data(self):
         self.prep_data1(self.file_manager.input_dem_file, self.file_manager.prep_dem, self.bounds)
-        self.prep_data1(self.file_manager.hillshade, self.file_manager.prep_hillshade, self.bounds)
-        self.prep_data1(self.file_manager.roughness, self.file_manager.prep_roughness, self.bounds)
-        self.prep_data1(self.file_manager.slope, self.file_manager.prep_slope, self.bounds)
+        self.prep_data1(self.file_manager.output_hillshade_file, self.file_manager.prep_hillshade, self.bounds)
+        self.prep_data1(self.file_manager.output_roughness_file, self.file_manager.prep_roughness, self.bounds)
+        self.prep_data1(self.file_manager.output_slope_file, self.file_manager.prep_slope, self.bounds)
         self.prep_data1(self.file_manager.gaussian_dem, self.file_manager.prep_gaussian_dem, self.bounds)
     
 class PlanetManager:
