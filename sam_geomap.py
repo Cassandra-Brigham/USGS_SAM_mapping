@@ -265,13 +265,7 @@ class PlanetManager:
         self.raster_src = None
         self.bounds = None
         self.gray_3band = None
-    
-    def get_bounds(self):
-        with rasterio.open(self.file_manager.input_planet) as src:
-            self.raster_src = src
-            # Get bounds of the raster
-            self.bounds = src.bounds
-        return self.bounds
+
     
     @staticmethod
     def warp_raster(input_file, output_file):
@@ -297,7 +291,7 @@ class PlanetManager:
     
     def prep_planet_data(self):
         self.warp_raster(self.file_manager.input_planet, self.file_manager.input_planet[:-len(".tif")]+'_warp.tif')
-        self.crop_raster(self.file_manager.input_planet[:-len(".tif")]+'_warp.tif', self.file_manager.prep_planet,self.bounds)
+        self.crop_raster(self.file_manager.input_planet[:-len(".tif")]+'_warp.tif', self.file_manager.prep_planet,self.raster_manager.get_bounds())
 
     def make_three_band_planet(self):
         with rasterio.open(self.file_manager.prep_planet) as src:
@@ -309,8 +303,8 @@ class PlanetManager:
             self.b4 = src.read(4)
 
         # Create a new 3-band grayscale image
-        profile = src.profile
-        profile.update(count=3, dtype=rasterio.uint16, nodata=0.1)
+            profile = src.profile
+            profile.update(count=3, dtype=rasterio.uint16, nodata=0.1)
 
         self.rgb_3band = np.stack((self.b1,self.b2,self.b3), axis=0)
 
@@ -341,14 +335,14 @@ class PlanetManager:
         self.raster_manager.gaussian_filter(self.file_manager.ndvi_3band,self.file_manager.ndvi_3band_gaussian,5)
         self.raster_manager.gaussian_filter(self.file_manager.ndwi_3band,self.file_manager.ndwi_3band_gaussian,5)
 
-class ImplementingSAM:
-    def __init__(self, file_manager):
-        self.file_manager = file_manager
-        self.sam=None
-    def initiate_sam(self):
-        self.sam = SamGeo(
-        model_type="vit_h",
-        automatic=False,
-        sam_kwargs={"points_per_side": 32}
-    )
+#class ImplementingSAM:
+#    def __init__(self, file_manager):
+#        self.file_manager = file_manager
+#        self.sam=None
+#    def initiate_sam(self):
+#        self.sam = SamGeo(
+#        model_type="vit_h",
+#        automatic=False,
+#        sam_kwargs={"points_per_side": 32}
+#    )
     
