@@ -10,9 +10,9 @@ import matplotlib.pyplot as plt
 from scipy.ndimage import gaussian_filter
 
 class FileManager:
-    def __init__(self, folder, location, data_location, dem_name, planet_data, unit, filetype):
+    def __init__(self, folder, location, dem_name, planet_data, unit, filetype):
         self.folder = folder
-        self.location=location
+        self.location = location
         self.dem_name = dem_name
         self.data_location = folder+location+'/Input_data/'
         self.ML_location = folder+location+'/ML_ready/'
