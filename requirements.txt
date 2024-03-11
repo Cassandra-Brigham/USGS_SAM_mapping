@@ -6,3 +6,4 @@ geopandas
 GDAL
 matplotlib
 scipy
+segment-geospatial
