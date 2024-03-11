@@ -60,6 +60,8 @@ class FileManager:
     def create_directories (self):
         create_writable_directory(self.ML_location)
         create_writable_directory(self.folder+self.location+'/ML_output/')
+        create_writable_directory(self.folder+self.location+'/Input_data/')
+        create_writable_directory(self.folder+self.location+'/Prompts/')
     
     def name_files(self):
         #Topo
