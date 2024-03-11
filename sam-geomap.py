@@ -17,10 +17,10 @@ class FileManager:
         self.data_location = folder+location+'/Input_data/'
         self.ML_location = folder+location+'/ML_ready/'
         self.prompts_path = folder+location+'/Prompts/'
-        self.input_dem_file = data_location+dem_name
-        self.output_hillshade_file = data_location+'hill_'+dem_name
-        self.output_roughness_file = data_location+'roughness_'+dem_name
-        self.output_slope_file = data_location+'slope_'+dem_name
+        self.input_dem_file = None
+        self.output_hillshade_file = None
+        self.output_roughness_file = None
+        self.output_slope_file = None
         self.prep_dem = None
         self.prep_hillshade = None
         self.prep_roughness = None
@@ -32,7 +32,7 @@ class FileManager:
         self.prep_gaussian_roughness= None
         self.prep_gaussian_slope= None
         self.planet_data = planet_data
-        self.input_planet = data_location+planet_data
+        self.input_planet = None
         self.prep_planet = None
         self.rgb_3band = None
         self.ave_3band = None
@@ -63,14 +63,20 @@ class FileManager:
     
     def name_files(self):
         #Topo
+        self.input_dem_file = self.data_location+self.dem_name
+        self.output_hillshade_file = self.data_location+'hill_'+self.dem_name
+        self.output_roughness_file = self.data_location+'roughness_'+self.dem_name
+        self.output_slope_file = self.data_location+'slope_'+self.dem_name
         self.prep_dem = self.ML_location+self.location+'_EPSG_4326_DTM.tif'
         self.prep_hillshade = self.ML_location+self.location+'_EPSG_4326_hillshade.tif'
         self.prep_roughness = self.ML_location+self.location+'_EPSG_4326_roughness.tif'
         self.prep_slope = self.ML_location+self.location+'_EPSG_4326_slope.tif'
         self.gaussian_dem = self.data_location+'guassian_'+self.dem_name
         self.prep_gaussian_dem = self.ML_location+self.location+'_EPSG_4326_DTM_Gaussian.tif'
+        
 
         #Planet
+        self.input_planet = self.data_location+self.planet_data
         self.prep_planet= self.data_location+'Planet_crop_EPSG_4326.tif'
         self.rgb_3band = self.ML_location+self.location+'_EPSG_4326_Planet_rgb.tif'
         self.ave_3band = self.ML_location+self.location+'_EPSG_4326_lanet_ave.tif'
