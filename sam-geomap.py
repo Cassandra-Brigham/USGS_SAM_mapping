@@ -45,9 +45,10 @@ class FileManager:
         self.unit=unit
         self.filetype=filetype
 
-       
-    @staticmethod
-    def create_writable_directory(directory_path):
+    
+    def create_directories (self):
+
+        def create_writable_directory(directory_path):
         try:
             # Create a new directory with write permissions (0o777 gives full permissions)
             os.makedirs(directory_path, mode=0o777)
@@ -56,8 +57,7 @@ class FileManager:
         except OSError as e:
             print(f"Failed to create directory: {e}")
             return False
-    
-    def create_directories (self):
+
         create_writable_directory(self.ML_location)
         create_writable_directory(self.folder+self.location+'/ML_output/')
         create_writable_directory(self.folder+self.location+'/Input_data/')
