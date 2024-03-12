@@ -297,15 +297,16 @@ class PlanetManager:
         with rasterio.open(self.file_manager.prep_planet) as src:
 
         # Read the image bands (assuming it's a 3-band RGB image)
-            self.b1 = src.read(3)
-            self.b2 = src.read(2)
-            self.b3 = src.read(1)
-            self.b4 = src.read(4)
+            self.b1 = src.read(3).astype(float)
+            self.b2 = src.read(2).astype(float)
+            self.b3 = src.read(1).astype(float)
+            self.b4 = src.read(4).astype(float)
 
         # Create a new 3-band grayscale image
             profile = src.profile
-            profile.update(count=3, dtype=rasterio.uint16, nodata=0.1)
+            profile.update(count=3, dtype=rasterio.float32)
 
+        np.seterr(divide='ignore', invalid='ignore')
         self.rgb_3band = np.stack((self.b1,self.b2,self.b3), axis=0)
 
         with rasterio.open(self.file_manager.rgb_3band, 'w', **profile) as dst:
@@ -317,6 +318,7 @@ class PlanetManager:
         with rasterio.open(self.file_manager.ave_3band, 'w', **profile) as dst:
             dst.write(self.ave_3band)
 
+        
         ndvi_band = (self.b4-self.b1)/(self.b4+self.b1)
         self.ndvi_3band = np.stack((ndvi_band,ndvi_band,ndvi_band), axis=0)
 
