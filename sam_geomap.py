@@ -42,8 +42,11 @@ class FileManager:
         self.ave_3band_gaussian = None
         self.ndvi_3band_gaussian = None
         self.ndwi_3band_gaussian = None
-        self.unit=unit
+        self.unit = unit
+        self.unit_file=None
+        self.unit_name=None
         self.filetype=filetype
+        self.unit_mask=None
 
     
     def create_directories (self):
@@ -62,6 +65,7 @@ class FileManager:
         create_writable_directory(self.folder+self.location+'/ML_output/')
         create_writable_directory(self.folder+self.location+'/Input_data/')
         create_writable_directory(self.folder+self.location+'/Prompts/')
+        create_writable_directory(self.folder+self.location+'/Unit_masks/')
     
     def name_files(self):
         #Topo
@@ -136,6 +140,15 @@ class FileManager:
         self.mask_multiple_ave_3band_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_ave_3band_gaussian_'+'_'+self.unit+'.tif'
         self.mask_multiple_ndvi_3band_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_ndvi_3band_gaussian_'+'_'+self.unit+'.tif'
         self.mask_multiple_ndwi_3band_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_ndwi_3band_gaussian_'+'_'+self.unit+'.tif'
+
+            #Geologic units
+                #Unit name
+        self.unit_file = self.folder+self.location+'/Units/'+self.unit
+        self.unit_name = self.unit_file[:-len(self.filetype)]
+                #Mask
+        self.unit_mask = self.folder+self.location+'/Unit_masks/'+self.unit_name+'_binary_mask.tif'
+
+
 
 
 class RasterManager:
@@ -347,4 +360,59 @@ class PlanetManager:
 #        automatic=False,
 #        sam_kwargs={"points_per_side": 32}
 #    )
-    
+
+class PromptManager:
+    def __init__(self, file_manager):
+        self.file_manager=file_manager
+
+class MaskManager:
+    def __init__(self, file_manager):
+        self.file_manager=file_manager
+        self.mask_transform = None
+        self.mask_crs = None
+        self.mask_width = None
+        self.mask_height = None
+    def shapefile_to_mask(self):
+        with rasterio.open(self.file_manager.mask_multiple_dem) as mask:
+            self.mask_transform = mask.transform
+            self.mask_crs = mask.crs
+            self.mask_width = mask.width
+            self.mask_height = mask.height
+        
+        polygon_shp = gpd.read_file(self.file_manager.unit)
+
+        #check CRS and change if needed
+        if polygon_shp.crs != crs:
+            polygon_shp = polygon_shp.to_crs(crs)
+
+        # Create an empty array
+        binary_mask = np.zeros((height, width), dtype=np.uint8)
+
+        # Get the geometry of the Quat unit polygon in the correct format
+        geometry = [geom['geometry'] for geom in polygon_shp.geometry.__geo_interface__['features']]
+
+        # Burn the Quat unit polygon into the array
+        rasterio.features.rasterize(
+            shapes=geometry,
+            out=binary_mask,
+            transform=transform,
+            fill=0,  # Background
+            default_value=1,  # Foreground
+            dtype=np.uint8
+        )
+
+        #Define output binary image metadata
+        metadata = {
+            'driver': 'GTiff',
+            'dtype': 'uint8',
+            'nodata': None,
+            'width': binary_mask.shape[1],
+            'height': binary_mask.shape[0],
+            'count': 1,
+            'crs': crs,
+            'transform': transform
+        }
+
+        #Save binary image to output path
+        with rasterio.open(self.unit_mask, 'w', **metadata) as dst:
+            dst.write(binary_mask, 1)
