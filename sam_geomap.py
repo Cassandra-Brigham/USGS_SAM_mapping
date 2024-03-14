@@ -28,6 +28,7 @@ class FileManager:
         self.gaussian_dem = None
         self.gaussian_roughness= None
         self.gaussian_slope= None
+        self.prep_gaussian_dem = None
         self.prep_gaussian_hillshade= None
         self.prep_gaussian_roughness= None
         self.prep_gaussian_slope= None
@@ -216,6 +217,10 @@ class PlanetManager:
         self.raster_src = None
         self.bounds = None
         self.gray_3band = None
+        self.rgb_3band = None
+        self.ave_3band= None
+        self.ndvi_3band= None
+        self.ndwi_3band= None
 
     
     @staticmethod
@@ -305,7 +310,7 @@ class PromptManager:
         self.multiple_foreground_prompts = [f for f in os.listdir(self.file_manager.prompts_path) if os.path.isfile(os.path.join(self.file_manager.prompts_path, f)) and f.endswith("_multiple_foreground.shp")]
         self.multiple_background_prompts = [f for f in os.listdir(self.file_manager.prompts_path) if os.path.isfile(os.path.join(self.file_manager.prompts_path, f)) and f.endswith("_multiple_background.shp")]
         
-        self.geologic_units = [self.multiple_foreground_prompts[a][:-len("_multiple_foreground"+self.filetype)] for a in range(0,len(multiple_foreground_prompts))]
+        self.geologic_units = [self.multiple_foreground_prompts[a][:-len("_multiple_foreground.shp")] for a in range(0,len(self.multiple_foreground_prompts))]
 
     def shp_to_coords(self, mode='other foreground'):
     
@@ -390,7 +395,7 @@ class PromptManager:
         self.coords_multiple = coords_multiple
         self.labels_multiple = labels_multiple
 
-class ImplementingSAM:
+class SAMManager:
     def __init__(self, file_manager, prompt_manager):
         self.file_manager = file_manager
         self.prompt_manager = prompt_manager
@@ -434,11 +439,11 @@ class ImplementingSAM:
         for a in self.list_image_types:
             matching_image = find_filenames_matching_string(self.file_manager.ML_location,a)
             self.sam.set_image(matching_image)
-                for b in range(0,len(self.prompt_manager.geologic_units)):
-                    output_path = self.file_manager.folder+self.file_manager.location+'/ML_output/'+'_mask_single_'+a+'_'+self.prompt_manager.geologic_units[b]+'.tif'
-                    point_coords = self.prompt_manager.coords_single[b]
-                    labels = self.prompt_manager.labels_single[b]
-                    sam.predict(point_coords, point_labels=labels, point_crs="EPSG:4326", output=output_path)
+            for b in range(0,len(self.prompt_manager.geologic_units)):
+                output_path = self.file_manager.folder+self.file_manager.location+'/ML_output/'+'_mask_single_'+a+'_'+self.prompt_manager.geologic_units[b]+'.tif'
+                point_coords = self.prompt_manager.coords_single[b]
+                labels = self.prompt_manager.labels_single[b]
+                self.sam.predict(point_coords, point_labels=labels, point_crs="EPSG:4326", output=output_path)
 
     def sam_predict_multiple(self):
 
@@ -453,73 +458,82 @@ class ImplementingSAM:
         for a in self.list_image_types:
             matching_image = find_filenames_matching_string(self.file_manager.ML_location,a)
             self.sam.set_image(matching_image)
-                for b in range(0,len(self.prompt_manager.geologic_units)):
-                    output_path = self.file_manager.folder+self.file_manager.location+'/ML_output/'+'_mask_multiple_'+a+'_'+self.prompt_manager.geologic_units[b]+'.tif'
-                    point_coords = self.prompt_manager.coords_multiple[b]
-                    labels = self.prompt_manager.labels_multiple[b]
-                    sam.predict(point_coords, point_labels=labels, point_crs="EPSG:4326", output=output_path)
+            for b in range(0,len(self.prompt_manager.geologic_units)):
+                output_path = self.file_manager.folder+self.file_manager.location+'/ML_output/'+'_mask_multiple_'+a+'_'+self.prompt_manager.geologic_units[b]+'.tif'
+                point_coords = self.prompt_manager.coords_multiple[b]
+                labels = self.prompt_manager.labels_multiple[b]
+                self.sam.predict(point_coords, point_labels=labels, point_crs="EPSG:4326", output=output_path)
 
 class MaskManager:
-    def __init__(self, file_manager, units, filetype):
+    def __init__(self, file_manager,prompt_manager,sam_manager):
         self.file_manager=file_manager
-        self.unit = unit
-        self.unit_file=None
-        self.unit_name=None
-        self.filetype=filetype
-        self.unit_mask=None
+        self.prompt_manager=prompt_manager
+        self.sam_manager = sam_manager
+        self.unit_files=None
+        self.unit_names=None
+        self.unit_masks=None
         self.mask_transform = None
         self.mask_crs = None
         self.mask_width = None
         self.mask_height = None
-        
-    def unit_files(self):
-                #Unit name
-        self.unit_file = self.file_manager.folder+self.file_manager.location+'/Units/'+self.unit
-        self.unit_name = self.unit[:-len(self.filetype)]
-                #Mask
-        self.unit_mask = self.file_manager.folder+self.file_manager.location+'/Unit_masks/'+self.unit_name+'_binary_mask.tif'
-
+    
+    def get_unit_files(self):
+        def find_filenames_matching_string(file_paths, pattern):
+            matching_filenames = []
+            for file_path in file_paths:
+                filename = os.path.basename(file_path)
+                if pattern in filename:
+                    matching_filenames.append(filename)
+            return matching_filenames
+    
+        all_files=[find_filenames_matching_string(self.file_manager.folder+self.file_manager.location+'/Units/',a) for a in self.prompt_manager.geologic_units]
+        self.unit_files=[f for f in all_files if f.endswith(".shp")]
+        self.unit_names = os.path.basename(self.unit_files)[:-len(".shp")]
+        self.unit_masks = [self.file_manager.folder+self.file_manager.location+'/Unit_masks/'+a+'_binary_mask.tif' for a in self.unit_names]
+    
     def shapefile_to_mask(self):
-        with rasterio.open(self.file_manager.mask_multiple_dem) as mask:
+        example_mask = self.file_manager.folder+self.file_manager.location+'/ML_output/'+'_mask_multiple_'+self.sam_manager.list_image_types[0]+'_'+self.prompt_manager.geologic_units[0]+'.tif'
+        with rasterio.open(example_mask) as mask:
             self.mask_transform = mask.transform
             self.mask_crs = mask.crs
             self.mask_width = mask.width
             self.mask_height = mask.height
-        
-        polygon_shp = gpd.read_file(self.unit)
+                
+        for shapefile_in, mask_out in zip(self.unit_files,self.unit_masks):
+            polygon_shp = gpd.read_file(shapefile_in)
 
-        #check CRS and change if needed
-        if polygon_shp.crs != crs:
-            polygon_shp = polygon_shp.to_crs(crs)
+            #check CRS and change if needed
+            if polygon_shp.crs != self.mask_crs:
+                polygon_shp = polygon_shp.to_crs(self.mask_crs)
 
-        # Create an empty array
-        binary_mask = np.zeros((height, width), dtype=np.uint8)
+            # Create an empty array
+            binary_mask = np.zeros((self.mask_height, self.mask_width), dtype=np.uint8)
 
-        # Get the geometry of the Quat unit polygon in the correct format
-        geometry = [geom['geometry'] for geom in polygon_shp.geometry.__geo_interface__['features']]
+            # Get the geometry of the Quat unit polygon in the correct format
+            geometry = [geom['geometry'] for geom in polygon_shp.geometry.__geo_interface__['features']]
 
-        # Burn the Quat unit polygon into the array
-        rasterio.features.rasterize(
-            shapes=geometry,
-            out=binary_mask,
-            transform=transform,
-            fill=0,  # Background
-            default_value=1,  # Foreground
-            dtype=np.uint8
-        )
+            # Burn the Quat unit polygon into the array
+            rasterio.features.rasterize(
+                shapes=geometry,
+                out=binary_mask,
+                transform=self.mask_transform,
+                fill=0,  # Background
+                default_value=1,  # Foreground
+                dtype=np.uint8
+            )
 
-        #Define output binary image metadata
-        metadata = {
-            'driver': 'GTiff',
-            'dtype': 'uint8',
-            'nodata': None,
-            'width': binary_mask.shape[1],
-            'height': binary_mask.shape[0],
-            'count': 1,
-            'crs': crs,
-            'transform': transform
-        }
+            #Define output binary image metadata
+            metadata = {
+                'driver': 'GTiff',
+                'dtype': 'uint8',
+                'nodata': None,
+                'width': binary_mask.shape[1],
+                'height': binary_mask.shape[0],
+                'count': 1,
+                'crs': self.mask_crs,
+                'transform': self.mask_transform
+            }
 
-        #Save binary image to output path
-        with rasterio.open(self.unit_mask, 'w', **metadata) as dst:
-            dst.write(binary_mask, 1)
+            #Save binary image to output path
+            with rasterio.open(mask_out, 'w', **metadata) as dst:
+                dst.write(binary_mask, 1)
