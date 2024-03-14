@@ -287,11 +287,11 @@ class PlanetManager:
         with rasterio.open(self.file_manager.ndwi_3band, 'w', **profile) as dst:
             dst.write(self.ndwi_3band)
     
-    def planet_gaussian(self):
-        self.raster_manager.gaussian_filter(self.file_manager.rgb_3band,self.file_manager.rgb_3band_gaussian,5)
-        self.raster_manager.gaussian_filter(self.file_manager.ave_3band,self.file_manager.ave_3band_gaussian,5)
-        self.raster_manager.gaussian_filter(self.file_manager.ndvi_3band,self.file_manager.ndvi_3band_gaussian,5)
-        self.raster_manager.gaussian_filter(self.file_manager.ndwi_3band,self.file_manager.ndwi_3band_gaussian,5)
+    def planet_gaussian(self, scale):
+        self.raster_manager.gaussian_filter(self.file_manager.rgb_3band,self.file_manager.rgb_3band_gaussian,scale)
+        self.raster_manager.gaussian_filter(self.file_manager.ave_3band,self.file_manager.ave_3band_gaussian,scale)
+        self.raster_manager.gaussian_filter(self.file_manager.ndvi_3band,self.file_manager.ndvi_3band_gaussian,scale)
+        self.raster_manager.gaussian_filter(self.file_manager.ndwi_3band,self.file_manager.ndwi_3band_gaussian,scale)
 
 class PromptManager:
     def __init__(self, file_manager):
