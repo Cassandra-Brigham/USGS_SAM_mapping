@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from scipy.ndimage import gaussian_filter
 
 class FileManager:
-    def __init__(self, folder, location, dem_name, planet_data, unit, filetype):
+    def __init__(self, folder, location, dem_name, planet_data):
         self.folder = folder
         self.location = location
         self.dem_name = dem_name
@@ -42,11 +42,7 @@ class FileManager:
         self.ave_3band_gaussian = None
         self.ndvi_3band_gaussian = None
         self.ndwi_3band_gaussian = None
-        self.unit = unit
-        self.unit_file=None
-        self.unit_name=None
-        self.filetype=filetype
-        self.unit_mask=None
+        
 
     
     def create_directories (self):
@@ -85,71 +81,13 @@ class FileManager:
         self.input_planet = self.data_location+self.planet_data
         self.prep_planet= self.data_location+'Planet_crop_EPSG_4326.tif'
         self.rgb_3band = self.ML_location+self.location+'_EPSG_4326_Planet_rgb.tif'
-        self.ave_3band = self.ML_location+self.location+'_EPSG_4326_lanet_ave.tif'
+        self.ave_3band = self.ML_location+self.location+'_EPSG_4326_Planet_ave.tif'
         self.ndvi_3band = self.ML_location+self.location+'_EPSG_4326_Planet_ndvi.tif'
         self.ndwi_3band = self.ML_location+self.location+'_EPSG_4326_Planet_ndwi.tif'
         self.rgb_3band_gaussian = self.ML_location+self.location+'_EPSG_4326_Planet_rgb_Gaussian.tif'
         self.ave_3band_gaussian = self.ML_location+self.location+'_EPSG_4326_Planet_ave_Gaussian.tif'
         self.ndvi_3band_gaussian = self.ML_location+self.location+'_EPSG_4326_Planet_ndvi_Gaussian.tif'
         self.ndwi_3band_gaussian = self.ML_location+self.location+'_EPSG_4326_Planet_ndwi_Gaussian.tif'
-
-        #Prompts
-            # Single foreground
-        self.single_foreground_prompt = self.prompts_path+self.location+'_'+self.unit+'_SingleForeground'+self.filetype
-            # Multiple foreground
-        self.multiple_foreground_prompts = self.prompts_path+self.location+'_'+self.unit+'_MultipleForeground'+self.filetype
-            # Multiple background
-        self.multiple_background_prompts = self.prompts_path+self.location+'_'+self.unit+'_MultipleBackground'+self.filetype
-
-        #Masks
-            # Single point prompt
-                #Topo
-        self.mask_single_dem = self.folder+self.location+'/ML_output/'+self.location+'_mask_single_'+'_dem_'+'_'+self.unit+'.tif'
-        self.mask_single_hillshade = self.folder+self.location+'/ML_output/'+self.location+'_mask_single_'+'_hillshade_'+'_'+self.unit+'.tif'
-        self.mask_single_roughness = self.folder+self.location+'/ML_output/'+self.location+'_mask_single_'+'_roughness_'+'_'+self.unit+'.tif'
-        self.mask_single_slope = self.folder+self.location+'/ML_output/'+self.location+'_mask_single_'+'_slope_'+'_'+self.unit+'.tif'
-        self.mask_single_dem_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_single_'+'_dem_gaussian_'+'_'+self.unit+'.tif'
-        self.mask_single_hillshade_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_single_'+'_hillshade_gaussian_'+'_'+self.unit+'.tif'
-        self.mask_single_roughness_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_single_'+'_roughness_gaussian_'+'_'+self.unit+'.tif'
-        self.mask_single_slope_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_single_'+'_slope_gaussian_'+'_'+self.unit+'.tif'
-                #Planet
-        self.mask_single_rgb_3band = self.folder+self.location+'/ML_output/'+self.location+'_mask_single_'+'_rgb_3band_'+'_'+self.unit+'.tif'
-        self.mask_single_ave_3band = self.folder+self.location+'/ML_output/'+self.location+'_mask_single_'+'_ave_3band_'+'_'+self.unit+'.tif'
-        self.mask_single_ndvi_3band = self.folder+self.location+'/ML_output/'+self.location+'_mask_single_'+'_ndvi_3ban_'+'_'+self.unit+'.tif'
-        self.mask_single_ndwi_3band = self.folder+self.location+'/ML_output/'+self.location+'_mask_single_'+'_ndwi_3band_'+'_'+self.unit+'.tif'
-        self.mask_single_rgb_3band_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_single_'+'_rgb_3band_gaussian_'+'_'+self.unit+'.tif'
-        self.mask_single_ave_3band_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_single_'+'_ave_3band_gaussian_'+'_'+self.unit+'.tif'
-        self.mask_single_ndvi_3band_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_single_'+'_ndvi_3band_gaussian_'+'_'+self.unit+'.tif'
-        self.mask_single_ndwi_3band_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_single_'+'_ndwi_3band_gaussian_'+'_'+self.unit+'.tif'
-            # Multiple point prompts
-                #Topo
-        self.mask_multiple_dem = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_dem_'+'_'+self.unit+'.tif'
-        self.mask_multiple_hillshade = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_hillshade _'+'_'+self.unit+'.tif'
-        self.mask_multiple_roughness = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_roughness_'+'_'+self.unit+'.tif'
-        self.mask_multiple_slope = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_slope_'+'_'+self.unit+'.tif'
-        self.mask_multiple_dem_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_dem_gaussian_'+'_'+self.unit+'.tif'
-        self.mask_multiple_hillshade_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_hillshade_gaussian_'+'_'+self.unit+'.tif'
-        self.mask_multiple_roughness_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_roughness_gaussian_'+'_'+self.unit+'.tif'
-        self.mask_multiple_slope_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_slope_gaussian_'+'_'+self.unit+'.tif'
-                #Planet
-        self.mask_multiple_rgb_3band = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_rgb_3band_'+'_'+self.unit+'.tif'
-        self.mask_multiple_ave_3band = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_ave_3band_'+'_'+self.unit+'.tif'
-        self.mask_multiple_ndvi_3band = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_ndvi_3band_'+'_'+self.unit+'.tif'
-        self.mask_multiple_ndwi_3band = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_ndwi_3band_'+'_'+self.unit+'.tif'
-        self.mask_multiple_rgb_3band_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_rgb_3band_gaussian_'+'_'+self.unit+'.tif'
-        self.mask_multiple_ave_3band_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_ave_3band_gaussian_'+'_'+self.unit+'.tif'
-        self.mask_multiple_ndvi_3band_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_ndvi_3band_gaussian_'+'_'+self.unit+'.tif'
-        self.mask_multiple_ndwi_3band_gaussian = self.folder+self.location+'/ML_output/'+self.location+'_mask_multiple_'+'_ndwi_3band_gaussian_'+'_'+self.unit+'.tif'
-
-            #Geologic units
-                #Unit name
-        self.unit_file = self.folder+self.location+'/Units/'+self.unit
-        self.unit_name = self.unit_file[:-len(self.filetype)]
-                #Mask
-        self.unit_mask = self.folder+self.location+'/Unit_masks/'+self.unit_name+'_binary_mask.tif'
-
-
-
 
 class RasterManager:
     def __init__(self, file_manager):
@@ -350,28 +288,197 @@ class PlanetManager:
         self.raster_manager.gaussian_filter(self.file_manager.ndvi_3band,self.file_manager.ndvi_3band_gaussian,5)
         self.raster_manager.gaussian_filter(self.file_manager.ndwi_3band,self.file_manager.ndwi_3band_gaussian,5)
 
-#class ImplementingSAM:
-#    def __init__(self, file_manager):
-#        self.file_manager = file_manager
-#        self.sam=None
-#    def initiate_sam(self):
-#        self.sam = SamGeo(
-#        model_type="vit_h",
-#        automatic=False,
-#        sam_kwargs={"points_per_side": 32}
-#    )
-
 class PromptManager:
     def __init__(self, file_manager):
-        self.file_manager=file_manager
+        self.file_manager = file_manager
+        self.single_foreground_prompts = None
+        self.multiple_foreground_prompts = None
+        self.multiple_background_prompts = None
+        self.geologic_units = None
+        self.coords_single= None
+        self.coords_multiple= None
+        self.labels_single= None
+        self.labels_multiple= None
+        
+    def prompts_files (self):
+        self.single_foreground_prompts = [f for f in os.listdir(self.file_manager.prompts_path) if os.path.isfile(os.path.join(self.file_manager.prompts_path, f)) and f.endswith("_single_foreground.shp")]
+        self.multiple_foreground_prompts = [f for f in os.listdir(self.file_manager.prompts_path) if os.path.isfile(os.path.join(self.file_manager.prompts_path, f)) and f.endswith("_multiple_foreground.shp")]
+        self.multiple_background_prompts = [f for f in os.listdir(self.file_manager.prompts_path) if os.path.isfile(os.path.join(self.file_manager.prompts_path, f)) and f.endswith("_multiple_background.shp")]
+        
+        self.geologic_units = [self.multiple_foreground_prompts[a][:-len("_multiple_foreground"+self.filetype)] for a in range(0,len(multiple_foreground_prompts))]
+
+    def shp_to_coords(self, mode='other foreground'):
+    
+        def coord_list_from_shp_points(foreground_prompt_path, background_prompt_paths):
+            # Function to read foreground shapefile and extract coordinates
+            foreground_gdf = gpd.read_file(foreground_prompt_path)
+            coordinates_list_foreground = []
+            for geometry in foreground_gdf.geometry:
+                if geometry is not None:
+                    if geometry.type == 'MultiPoint':
+                        for point in geometry.geoms:
+                            coordinates_list_foreground.append([point.x, point.y])
+                    elif geometry.type == 'Point':
+                        coordinates_list_foreground.append([geometry.x, geometry.y])
+            labels_list_foreground = [1] * len(coordinates_list_foreground)
+            
+            # Initialize lists for background coordinates and labels
+            coordinates_list_background = []
+            labels_list_background = []
+            
+            # Process each background shapefile
+            for background_path in background_prompt_paths:
+                background_gdf = gpd.read_file(background_path)
+                for geometry in background_gdf.geometry:
+                    if geometry is not None:
+                        if geometry.type == 'MultiPoint':
+                            for point in geometry.geoms:
+                                coordinates_list_background.append([point.x, point.y])
+                        elif geometry.type == 'Point':
+                            coordinates_list_background.append([geometry.x, geometry.y])
+            labels_list_background = [0] * len(coordinates_list_background)
+
+            # Combine foreground and background lists
+            coordinates_list = coordinates_list_foreground + coordinates_list_background
+            labels_list = labels_list_foreground + labels_list_background
+
+            return coordinates_list, labels_list
+
+        single_foreground_prompts = self.single_foreground_prompts
+        multiple_foreground_prompts = self.multiple_foreground_prompts
+        multiple_background_prompts = self.multiple_background_prompts
+
+        coords_single = []
+        labels_single = []
+        for a in range(0,len(single_foreground_prompts)):
+            coords_single_temp, labels_single_temp = coord_list_from_shp_points(single_foreground_prompts[a], None)
+            coords_single.append(coords_single_temp)
+            labels_single.append(labels_single_temp)
+        
+        self.coords_single = coords_single 
+        self.labels_single = labels_single
+
+        if mode==None:
+            coords_multiple = []
+            labels_multiple = []
+            for a in range(0,len(multiple_foreground_prompts)):
+                coords_multiple_temp, labels_multiple_temp = coord_list_from_shp_points(multiple_foreground_prompts[a], None)
+                coords_multiple.append(coords_multiple_temp)
+                labels_multiple.append(labels_multiple_temp)
+
+        elif mode == 'files':
+            coords_multiple = []
+            labels_multiple = []
+            for a in range(0,len(multiple_foreground_prompts)):
+                coords_multiple_temp, labels_multiple_temp = coord_list_from_shp_points(multiple_foreground_prompts[a], multiple_background_prompts[a])
+                coords_multiple.append(coords_multiple_temp)
+                labels_multiple.append(labels_multiple_temp)
+
+        elif mode == 'other foreground':
+            coords_multiple = []
+            labels_multiple = []
+
+            for i, foreground_file in enumerate(multiple_foreground_prompts):
+                # Prepare a list of background files excluding the current foreground file
+                background_files = [file for j, file in enumerate(multiple_foreground_prompts) if i != j]
+                
+                # Extract coordinates and labels for the current setup
+                coords_temp, labels_temp = coord_list_from_shp_points(foreground_file, background_files)
+                coords_multiple.append(coords_temp)
+                labels_multiple.append(labels_temp)
+            
+        self.coords_multiple = coords_multiple
+        self.labels_multiple = labels_multiple
+
+class ImplementingSAM:
+    def __init__(self, file_manager, prompt_manager):
+        self.file_manager = file_manager
+        self.prompt_manager = prompt_manager
+        self.sam=None
+        self.default_kwargs = {
+                "points_per_side": 32,
+                "points_per_batch": 64,
+                "pred_iou_thresh": 0.88,
+                "stability_score_thresh": 0.95,
+                "stability_score_offset": 1.0,
+                "box_nms_thresh": 0.7,
+                "crop_n_layers": 0,
+                "crop_nms_thresh": 0.7,
+                "crop_overlap_ratio": 512 / 1500,
+                "crop_n_points_downscale_factor": 1,
+                "point_grids": None,
+                "min_mask_region_area": 0,
+                "output_mode": "binary_mask",
+                }
+        self.list_image_types = None
+    def initiate_sam(self, sam_kwargs, auto = False):
+        self.sam = SamGeo(
+        checkpoint_dir= "/content/drive/MyDrive/USGS_ML_2024/geomap_10_examples/checkpoint/",
+        model_type="vit_h",
+        automatic=auto,
+        **sam_kwargs
+        )
+
+        self.list_image_types = ['DTM','hillshade','roughness','slope','DTM_Gaussian','Planet_rgb','Planet_ave','Planet_ndvi','Planet_ndwi','Planet_rgb_Gaussian','Planet_ave_Gaussian','Planet_ndvi_Gaussian','Planet_ndwi_Gaussian']
+
+    def sam_predict_single(self):
+
+        def find_filenames_matching_string(file_paths, pattern):
+            matching_filenames = []
+            for file_path in file_paths:
+                filename = os.path.basename(file_path)
+                if pattern in filename:
+                    matching_filenames.append(filename)
+            return matching_filenames
+
+        for a in self.list_image_types:
+            matching_image = find_filenames_matching_string(self.file_manager.ML_location,a)
+            self.sam.set_image(matching_image)
+                for b in range(0,len(self.prompt_manager.geologic_units)):
+                    output_path = self.file_manager.folder+self.file_manager.location+'/ML_output/'+'_mask_single_'+a+'_'+self.prompt_manager.geologic_units[b]+'.tif'
+                    point_coords = self.prompt_manager.coords_single[b]
+                    labels = self.prompt_manager.labels_single[b]
+                    sam.predict(point_coords, point_labels=labels, point_crs="EPSG:4326", output=output_path)
+
+    def sam_predict_multiple(self):
+
+        def find_filenames_matching_string(file_paths, pattern):
+            matching_filenames = []
+            for file_path in file_paths:
+                filename = os.path.basename(file_path)
+                if pattern in filename:
+                    matching_filenames.append(filename)
+            return matching_filenames
+
+        for a in self.list_image_types:
+            matching_image = find_filenames_matching_string(self.file_manager.ML_location,a)
+            self.sam.set_image(matching_image)
+                for b in range(0,len(self.prompt_manager.geologic_units)):
+                    output_path = self.file_manager.folder+self.file_manager.location+'/ML_output/'+'_mask_multiple_'+a+'_'+self.prompt_manager.geologic_units[b]+'.tif'
+                    point_coords = self.prompt_manager.coords_multiple[b]
+                    labels = self.prompt_manager.labels_multiple[b]
+                    sam.predict(point_coords, point_labels=labels, point_crs="EPSG:4326", output=output_path)
 
 class MaskManager:
-    def __init__(self, file_manager):
+    def __init__(self, file_manager, units, filetype):
         self.file_manager=file_manager
+        self.unit = unit
+        self.unit_file=None
+        self.unit_name=None
+        self.filetype=filetype
+        self.unit_mask=None
         self.mask_transform = None
         self.mask_crs = None
         self.mask_width = None
         self.mask_height = None
+        
+    def unit_files(self):
+                #Unit name
+        self.unit_file = self.file_manager.folder+self.file_manager.location+'/Units/'+self.unit
+        self.unit_name = self.unit[:-len(self.filetype)]
+                #Mask
+        self.unit_mask = self.file_manager.folder+self.file_manager.location+'/Unit_masks/'+self.unit_name+'_binary_mask.tif'
+
     def shapefile_to_mask(self):
         with rasterio.open(self.file_manager.mask_multiple_dem) as mask:
             self.mask_transform = mask.transform
@@ -379,7 +486,7 @@ class MaskManager:
             self.mask_width = mask.width
             self.mask_height = mask.height
         
-        polygon_shp = gpd.read_file(self.file_manager.unit)
+        polygon_shp = gpd.read_file(self.unit)
 
         #check CRS and change if needed
         if polygon_shp.crs != crs:
