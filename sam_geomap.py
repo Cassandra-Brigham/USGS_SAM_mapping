@@ -8,6 +8,8 @@ import geopandas as gpd
 from osgeo import gdal, osr, gdalconst
 import matplotlib.pyplot as plt
 from scipy.ndimage import gaussian_filter
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, jaccard_score
+
 
 class FileManager:
     def __init__(self, folder, location, dem_name, planet_data):
@@ -476,6 +478,11 @@ class MaskManager:
         self.mask_crs = None
         self.mask_width = None
         self.mask_height = None
+        self.accuracy = None
+        self.precision = None
+        self.recall = None
+        self.f1 = None
+        self.iou = None
     
     def get_unit_files(self):
         def find_filenames_matching_string(file_paths, pattern):
@@ -542,12 +549,47 @@ class MaskManager:
         def read_binary_raster(path):
             with rasterio.open(path) as src:
                 return src.read(1)
-        for unit in self.mask_manager.unit_names:
+        def find_filenames_matching_string(file_paths, pattern):
+            matching_filenames = []
+            for file_path in file_paths:
+                filename = os.path.basename(file_path)
+                if pattern in filename:
+                    matching_filenames.append(filename)
+            return matching_filenames
         
-        ground_truth_path = 'path/to/ground_truth.tif'
+        accuracy = []
+        precision = []
+        recall = []
+        f1 = []
+        iou = []
         
-        model_output_path = self.unit_masks
-
-        # Read the binary images
-        model_output = read_binary_raster(model_output_path)
-        ground_truth = read_binary_raster(ground_truth_path)
+        for unit in self.unit_names:
+            ground_truth_path = find_filenames_matching_string(self.unit_masks, unit)
+            all_model_outputs = find_filenames_matching_string(self.file_manager.folder+self.file_manager.location+'/ML_output/',unit)
+            for type in self.sam_manager.list_image_types:
+                model_output_path = find_filenames_matching_string(all_model_outputs,type)
+                
+                model_output = read_binary_raster(model_output_path)
+                ground_truth = read_binary_raster(ground_truth_path)
+                
+                model_output_flat = model_output.flatten()
+                ground_truth_flat = ground_truth.flatten()
+                
+                # Calculate metrics
+                accuracy_temp = accuracy_score(ground_truth_flat, model_output_flat)
+                precision_temp = precision_score(ground_truth_flat, model_output_flat)
+                recall_temp = recall_score(ground_truth_flat, model_output_flat)
+                f1_temp = f1_score(ground_truth_flat, model_output_flat)
+                iou_temp = jaccard_score(ground_truth_flat, model_output_flat)
+                
+                accuracy.append(accuracy_temp)
+                precision.append(precision_temp)
+                recall.append(recall_temp)
+                f1.append(f1_temp)
+                iou.append(iou_temp)
+                
+        self.accuracy = accuracy
+        self.precision = precision
+        self.recall = recall
+        self.f1 = f1
+        self.iou = iou
