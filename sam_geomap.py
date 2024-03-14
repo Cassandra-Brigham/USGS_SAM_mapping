@@ -196,8 +196,8 @@ class RasterManager:
         dataset = None
         output_dataset = None
 
-    def gaussian_topo_data(self):
-        self.apply_gaussian_filter(self.file_manager.input_dem_file, self.file_manager.gaussian_dem, 5)
+    def gaussian_topo_data(self, scale):
+        self.apply_gaussian_filter(self.file_manager.input_dem_file, self.file_manager.gaussian_dem, scale)
     
     def prep_topo_data(self):
         self.prep_data1(self.file_manager.input_dem_file, self.file_manager.prep_dem, self.bounds)
