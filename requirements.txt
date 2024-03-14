@@ -7,3 +7,4 @@ GDAL
 matplotlib
 scipy
 segment-geospatial
+sklearn
