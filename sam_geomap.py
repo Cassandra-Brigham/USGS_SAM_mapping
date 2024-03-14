@@ -418,6 +418,7 @@ class SAMManager:
                 "output_mode": "binary_mask",
                 }
         self.list_image_types = None
+        
     def initiate_sam(self, sam_kwargs, auto = False):
         self.sam = SamGeo(
         checkpoint_dir= "/content/drive/MyDrive/USGS_ML_2024/geomap_10_examples/checkpoint/",
@@ -442,12 +443,16 @@ class SAMManager:
             matching_image = find_filenames_matching_string(self.file_manager.ML_location,a)
             if not matching_image:  # If the current list is empty, skip to the next one
                 continue
-            self.sam.set_image(matching_image[0])
-            for b in range(0,len(self.prompt_manager.geologic_units)):
-                output_path = self.file_manager.folder+self.file_manager.location+'/ML_output/'+self.file_manager.location+'_mask_single_'+a+'_'+self.prompt_manager.geologic_units[b]+'.tif'
-                point_coords = self.prompt_manager.coords_single[b]
-                labels = self.prompt_manager.labels_single[b]
-                self.sam.predict(point_coords, point_labels=labels, point_crs="EPSG:4326", output=output_path)
+            else:
+                self.sam.set_image(matching_image[0])
+                
+                for b in range(0,len(self.prompt_manager.geologic_units)):
+                    
+                    output_path = self.file_manager.folder+self.file_manager.location+'/ML_output/'+self.file_manager.location+'_mask_single_'+a+'_'+self.prompt_manager.geologic_units[b]+'.tif'
+                    point_coords = self.prompt_manager.coords_single[b]
+                    labels = self.prompt_manager.labels_single[b]
+                    
+                    self.sam.predict(point_coords, point_labels=labels, point_crs="EPSG:4326", output=output_path)
 
     def sam_predict_multiple(self):
 
@@ -463,12 +468,16 @@ class SAMManager:
             matching_image = find_filenames_matching_string(self.file_manager.ML_location,a)
             if not matching_image:  # If the current list is empty, skip to the next one
                 continue
-            self.sam.set_image(matching_image[0])
-            for b in range(0,len(self.prompt_manager.geologic_units)):
-                output_path = self.file_manager.folder+self.file_manager.location+'/ML_output/'+self.file_manager.location+'_mask_multiple_'+a+'_'+self.prompt_manager.geologic_units[b]+'.tif'
-                point_coords = self.prompt_manager.coords_multiple[b]
-                labels = self.prompt_manager.labels_multiple[b]
-                self.sam.predict(point_coords, point_labels=labels, point_crs="EPSG:4326", output=output_path)
+            else:
+                self.sam.set_image(matching_image[0])
+                
+                for b in range(0,len(self.prompt_manager.geologic_units)):
+                    
+                    output_path = self.file_manager.folder+self.file_manager.location+'/ML_output/'+self.file_manager.location+'_mask_multiple_'+a+'_'+self.prompt_manager.geologic_units[b]+'.tif'
+                    point_coords = self.prompt_manager.coords_multiple[b]
+                    labels = self.prompt_manager.labels_multiple[b]
+                    
+                    self.sam.predict(point_coords, point_labels=labels, point_crs="EPSG:4326", output=output_path)
 
 class MaskManager:
     def __init__(self, file_manager,prompt_manager,sam_manager):
