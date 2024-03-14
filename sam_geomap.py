@@ -349,9 +349,9 @@ class PromptManager:
 
             return coordinates_list, labels_list
 
-        single_foreground_prompts = self.single_foreground_prompts
-        multiple_foreground_prompts = self.multiple_foreground_prompts
-        multiple_background_prompts = self.multiple_background_prompts
+        single_foreground_prompts = self.file_manager.prompts_path+self.single_foreground_prompts
+        multiple_foreground_prompts = self.file_manager.prompts_path+self.multiple_foreground_prompts
+        multiple_background_prompts = self.file_manager.prompts_path+self.multiple_background_prompts
 
         coords_single = []
         labels_single = []
@@ -537,3 +537,15 @@ class MaskManager:
             #Save binary image to output path
             with rasterio.open(mask_out, 'w', **metadata) as dst:
                 dst.write(binary_mask, 1)
+        
+    def get_performance_stats(self):
+        def read_binary_raster(path):
+            with rasterio.open(path) as src:
+                return src.read(1)
+        
+        model_output_path = self.unit_masks
+        ground_truth_path = 'path/to/ground_truth.tif'
+
+        # Read the binary images
+        model_output = read_binary_raster(model_output_path)
+        ground_truth = read_binary_raster(ground_truth_path)
