@@ -426,7 +426,7 @@ class SAMManager:
         **sam_kwargs
         )
 
-        self.list_image_types = ['DTM','hillshade','roughness','slope','DTM_Gaussian','Planet_rgb','Planet_ave','Planet_ndvi','Planet_ndwi']#,'Planet_rgb_Gaussian','Planet_ave_Gaussian','Planet_ndvi_Gaussian','Planet_ndwi_Gaussian']
+        self.list_image_types = ['DTM','hillshade','roughness','slope','DTM_Gaussian','Planet_rgb','Planet_ave','Planet_ndvi','Planet_ndwi','Planet_rgb_Gaussian','Planet_ave_Gaussian','Planet_ndvi_Gaussian','Planet_ndwi_Gaussian']
 
     def sam_predict_single(self):
 
@@ -497,7 +497,7 @@ class MaskManager:
                     matching_filenames.append(filename)
             return matching_filenames
     
-        all_files=[find_filenames_matching_string(self.file_manager.folder+self.file_manager.location+'/Units/',a)[0] for a in self.prompt_manager.geologic_units]
+        all_files=[find_filenames_matching_string(self.file_manager.folder+self.file_manager.location+'/Units/',a)[0] for a in self.prompt_manager.geologic_units if find_filenames_matching_string(self.file_manager.folder+self.file_manager.location+'/Units/',a)]
         self.unit_files=[f for f in all_files if f.endswith(".shp")]
         self.unit_names = os.path.basename(self.unit_files)[:-len(".shp")]
         self.unit_masks = [self.file_manager.folder+self.file_manager.location+'/Unit_masks/'+a+'_binary_mask.tif' for a in self.unit_names]
