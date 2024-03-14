@@ -426,7 +426,7 @@ class SAMManager:
         **sam_kwargs
         )
 
-        self.list_image_types = ['DTM','hillshade','roughness','slope','DTM_Gaussian','Planet_rgb','Planet_ave','Planet_ndvi','Planet_ndwi','Planet_rgb_Gaussian','Planet_ave_Gaussian','Planet_ndvi_Gaussian','Planet_ndwi_Gaussian']
+        self.list_image_types = ['DTM','hillshade','roughness','slope','DTM_Gaussian','Planet_rgb','Planet_ave','Planet_ndvi','Planet_ndwi']#,'Planet_rgb_Gaussian','Planet_ave_Gaussian','Planet_ndvi_Gaussian','Planet_ndwi_Gaussian']
 
     def sam_predict_single(self):
 
