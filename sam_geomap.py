@@ -455,7 +455,6 @@ class SAMManager:
                     self.sam.predict(point_coords, point_labels=labels, point_crs="EPSG:4326", output=output_path)
 
     def sam_predict_multiple(self):
-
         def find_filenames_matching_string(file_paths, pattern):
             matching_filenames = []
             for file_path in file_paths:
@@ -465,19 +464,28 @@ class SAMManager:
             return matching_filenames
 
         for a in self.list_image_types:
-            matching_image = find_filenames_matching_string(self.file_manager.ML_location,a)
-            if not matching_image:  # If the current list is empty, skip to the next one
-                continue
-            else:
+            try:
+                matching_image = find_filenames_matching_string(self.file_manager.ML_location, a)
+                if not matching_image:
+                    print(f"No matching images found for type {a}.")
+                    continue
+
                 self.sam.set_image(matching_image[0])
-                
-                for b in range(0,len(self.prompt_manager.geologic_units)):
-                    
-                    output_path = self.file_manager.folder+self.file_manager.location+'/ML_output/'+self.file_manager.location+'_mask_multiple_'+a+'_'+self.prompt_manager.geologic_units[b]+'.tif'
+
+                for b in range(0, len(self.prompt_manager.geologic_units)):
+                    output_path = f"{self.file_manager.folder}{self.file_manager.location}/ML_output/{self.file_manager.location}_mask_multiple_{a}_{self.prompt_manager.geologic_units[b]}.tif"
                     point_coords = self.prompt_manager.coords_multiple[b]
                     labels = self.prompt_manager.labels_multiple[b]
-                    
+
+                    if not point_coords or not labels:
+                        print(f"Missing coordinates or labels for {a}, unit {self.prompt_manager.geologic_units[b]}. Skipping...")
+                        continue
+
                     self.sam.predict(point_coords, point_labels=labels, point_crs="EPSG:4326", output=output_path)
+                    print(f"Prediction completed for {output_path}")
+
+            except Exception as e:
+                print(f"An error occurred during multiple prediction for {a}: {e}")
 
 class MaskManager:
     def __init__(self, file_manager,prompt_manager,sam_manager):
