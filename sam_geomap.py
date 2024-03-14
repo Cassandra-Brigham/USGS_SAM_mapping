@@ -349,9 +349,9 @@ class PromptManager:
 
             return coordinates_list, labels_list
 
-        single_foreground_prompts = self.file_manager.prompts_path+self.single_foreground_prompts
-        multiple_foreground_prompts = self.file_manager.prompts_path+self.multiple_foreground_prompts
-        multiple_background_prompts = self.file_manager.prompts_path+self.multiple_background_prompts
+        single_foreground_prompts = [self.file_manager.prompts_path+self.single_foreground_prompts[a] for a in range (0,len(self.single_foreground_prompts))]
+        multiple_foreground_prompts = [self.file_manager.prompts_path+self.multiple_foreground_prompts[a] for a in range (0,len(self.multiple_foreground_prompts))]
+        multiple_background_prompts = [self.file_manager.prompts_path+self.multiple_background_prompts[a] for a in range (0,len(self.multiple_background_prompts))]
 
         coords_single = []
         labels_single = []
@@ -542,9 +542,11 @@ class MaskManager:
         def read_binary_raster(path):
             with rasterio.open(path) as src:
                 return src.read(1)
+        for unit in self.mask_manager.unit_names:
+        
+        ground_truth_path = 'path/to/ground_truth.tif'
         
         model_output_path = self.unit_masks
-        ground_truth_path = 'path/to/ground_truth.tif'
 
         # Read the binary images
         model_output = read_binary_raster(model_output_path)
