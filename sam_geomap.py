@@ -439,10 +439,10 @@ class SAMManager:
             return matching_filenames
 
         for a in self.list_image_types:
-            matching_image = find_filenames_matching_string(self.file_manager.ML_location,a)
+            matching_image = find_filenames_matching_string(self.file_manager.ML_location,a)[0]
             self.sam.set_image(matching_image)
             for b in range(0,len(self.prompt_manager.geologic_units)):
-                output_path = self.file_manager.folder+self.file_manager.location+'/ML_output/'+'_mask_single_'+a+'_'+self.prompt_manager.geologic_units[b]+'.tif'
+                output_path = self.file_manager.folder+self.file_manager.location+'/ML_output/'+self.file_manager.location+'_mask_single_'+a+'_'+self.prompt_manager.geologic_units[b]+'.tif'
                 point_coords = self.prompt_manager.coords_single[b]
                 labels = self.prompt_manager.labels_single[b]
                 self.sam.predict(point_coords, point_labels=labels, point_crs="EPSG:4326", output=output_path)
@@ -458,10 +458,10 @@ class SAMManager:
             return matching_filenames
 
         for a in self.list_image_types:
-            matching_image = find_filenames_matching_string(self.file_manager.ML_location,a)
+            matching_image = find_filenames_matching_string(self.file_manager.ML_location,a)[0]
             self.sam.set_image(matching_image)
             for b in range(0,len(self.prompt_manager.geologic_units)):
-                output_path = self.file_manager.folder+self.file_manager.location+'/ML_output/'+'_mask_multiple_'+a+'_'+self.prompt_manager.geologic_units[b]+'.tif'
+                output_path = self.file_manager.folder+self.file_manager.location+'/ML_output/'+self.file_manager.location+'_mask_multiple_'+a+'_'+self.prompt_manager.geologic_units[b]+'.tif'
                 point_coords = self.prompt_manager.coords_multiple[b]
                 labels = self.prompt_manager.labels_multiple[b]
                 self.sam.predict(point_coords, point_labels=labels, point_crs="EPSG:4326", output=output_path)
@@ -493,13 +493,13 @@ class MaskManager:
                     matching_filenames.append(filename)
             return matching_filenames
     
-        all_files=[find_filenames_matching_string(self.file_manager.folder+self.file_manager.location+'/Units/',a) for a in self.prompt_manager.geologic_units]
+        all_files=[find_filenames_matching_string(self.file_manager.folder+self.file_manager.location+'/Units/',a)[0] for a in self.prompt_manager.geologic_units]
         self.unit_files=[f for f in all_files if f.endswith(".shp")]
         self.unit_names = os.path.basename(self.unit_files)[:-len(".shp")]
         self.unit_masks = [self.file_manager.folder+self.file_manager.location+'/Unit_masks/'+a+'_binary_mask.tif' for a in self.unit_names]
     
     def shapefile_to_mask(self):
-        example_mask = self.file_manager.folder+self.file_manager.location+'/ML_output/'+'_mask_multiple_'+self.sam_manager.list_image_types[0]+'_'+self.prompt_manager.geologic_units[0]+'.tif'
+        example_mask = self.file_manager.folder+self.file_manager.location+'/ML_output/'+self.file_manager.location+'_mask_multiple_'+self.sam_manager.list_image_types[0]+'_'+self.prompt_manager.geologic_units[0]+'.tif'
         with rasterio.open(example_mask) as mask:
             self.mask_transform = mask.transform
             self.mask_crs = mask.crs
