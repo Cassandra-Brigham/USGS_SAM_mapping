@@ -498,8 +498,8 @@ class MaskManager:
             return matching_filenames
     
         all_files=[find_filenames_matching_string(self.file_manager.folder+self.file_manager.location+'/Units/',a)[0] for a in self.prompt_manager.geologic_units if find_filenames_matching_string(self.file_manager.folder+self.file_manager.location+'/Units/',a)]
-        self.unit_files=[f for f in all_files if f.endswith(".shp")][0]
-        self.unit_names = os.path.basename(self.unit_files)[:-len(".shp")]
+        self.unit_files=[f for f in all_files if f.endswith(".shp")]
+        self.unit_names = [os.path.basename(self.unit_files[a])[:-len(".shp")] for a in range(0,len(self.unit_names))]
         self.unit_masks = [self.file_manager.folder+self.file_manager.location+'/Unit_masks/'+a+'_binary_mask.tif' for a in self.unit_names]
     
     def shapefile_to_mask(self):
