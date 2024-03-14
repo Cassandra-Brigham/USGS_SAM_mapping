@@ -437,10 +437,12 @@ class SAMManager:
                 if pattern in filename:
                     matching_filenames.append(filename)
             return matching_filenames
-
+        
         for a in self.list_image_types:
-            matching_image = find_filenames_matching_string(self.file_manager.ML_location,a)[0]
-            self.sam.set_image(matching_image)
+            matching_image = find_filenames_matching_string(self.file_manager.ML_location,a)
+            if not matching_image:  # If the current list is empty, skip to the next one
+                continue
+            self.sam.set_image(matching_image[0])
             for b in range(0,len(self.prompt_manager.geologic_units)):
                 output_path = self.file_manager.folder+self.file_manager.location+'/ML_output/'+self.file_manager.location+'_mask_single_'+a+'_'+self.prompt_manager.geologic_units[b]+'.tif'
                 point_coords = self.prompt_manager.coords_single[b]
@@ -458,8 +460,10 @@ class SAMManager:
             return matching_filenames
 
         for a in self.list_image_types:
-            matching_image = find_filenames_matching_string(self.file_manager.ML_location,a)[0]
-            self.sam.set_image(matching_image)
+            matching_image = find_filenames_matching_string(self.file_manager.ML_location,a)
+            if not matching_image:  # If the current list is empty, skip to the next one
+                continue
+            self.sam.set_image(matching_image[0])
             for b in range(0,len(self.prompt_manager.geologic_units)):
                 output_path = self.file_manager.folder+self.file_manager.location+'/ML_output/'+self.file_manager.location+'_mask_multiple_'+a+'_'+self.prompt_manager.geologic_units[b]+'.tif'
                 point_coords = self.prompt_manager.coords_multiple[b]
