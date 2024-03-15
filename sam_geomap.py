@@ -4,6 +4,7 @@ import leafmap
 from samgeo.hq_sam import SamGeo, tms_to_geotiff
 from samgeo import get_basemaps
 import rasterio
+from rasterio import features
 import geopandas as gpd
 from osgeo import gdal, osr, gdalconst
 import matplotlib.pyplot as plt
@@ -576,7 +577,7 @@ class MaskManager:
             geometry = [geom['geometry'] for geom in polygon_shp.geometry.__geo_interface__['features']]
 
             # Burn the Quat unit polygon into the array
-            rasterio.features.rasterize(
+            features.rasterize(
                 shapes=geometry,
                 out=binary_mask,
                 transform=self.mask_transform,
