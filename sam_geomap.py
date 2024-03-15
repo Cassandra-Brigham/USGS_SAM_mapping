@@ -98,12 +98,6 @@ class RasterManager:
         self.raster_src = None
         self.bounds=None
     
-    def get_bounds(self):
-        with rasterio.open(self.file_manager.input_dem_file) as src:
-            self.raster_src = src
-            # Get bounds of the raster
-            self.bounds = src.bounds
-        return self.bounds
 
     def calculate_topo_derivs(self,azimuth=315, altitude=45):
         gdal.DEMProcessing(self.file_manager.output_hillshade_file, self.file_manager.input_dem_file, "hillshade", azimuth=str(azimuth), altitude=str(altitude))
@@ -127,6 +121,13 @@ class RasterManager:
         resampleAlg=resampling_method)
 
         gdal.Warp(output_file, input_file, options=warp_options)
+    
+   
+    def get_bounds(self):
+        self.warp_raster(self.file_manager.input_dem_file, self.file_manager.input_dem_file[:-len(".tif")]+'_warp.tif')
+        with rasterio.open(self.file_manager.input_dem_file[:-len(".tif")]+'_warp.tif') as src:
+            # Get bounds of the raster
+            self.bounds = src.bounds
     
     @staticmethod
     def crop_raster(input_raster, output_raster, bounds):
@@ -203,16 +204,16 @@ class RasterManager:
     
     def prep_topo_data(self):
         
-        def prep_data(input_raster, output_raster, bounds):
+        def prep_data(self, input_raster, output_raster):
             self.warp_raster(input_raster, input_raster[:-len(".tif")]+'_warp.tif')
-            self.crop_raster(input_raster[:-len(".tif")]+'_warp.tif',input_raster[:-len(".tif")]+'_crop.tif',bounds)
+            self.crop_raster(input_raster[:-len(".tif")]+'_warp.tif',input_raster[:-len(".tif")]+'_crop.tif',self.bounds)
             self.make_three_band_image(input_raster[:-len(".tif")]+'_crop.tif', output_raster)
         
-        prep_data(self.file_manager.input_dem_file, self.file_manager.prep_dem, self.bounds)
-        prep_data(self.file_manager.output_hillshade_file, self.file_manager.prep_hillshade, self.bounds)
-        prep_data(self.file_manager.output_roughness_file, self.file_manager.prep_roughness, self.bounds)
-        prep_data(self.file_manager.output_slope_file, self.file_manager.prep_slope, self.bounds)
-        prep_data(self.file_manager.gaussian_dem, self.file_manager.prep_gaussian_dem, self.bounds)
+        prep_data(self.file_manager.input_dem_file, self.file_manager.prep_dem)
+        prep_data(self.file_manager.output_hillshade_file, self.file_manager.prep_hillshade)
+        prep_data(self.file_manager.output_roughness_file, self.file_manager.prep_roughness)
+        prep_data(self.file_manager.output_slope_file, self.file_manager.prep_slope)
+        prep_data(self.file_manager.gaussian_dem, self.file_manager.prep_gaussian_dem)
     
 class PlanetManager:
     def __init__(self, file_manager,raster_manager):
