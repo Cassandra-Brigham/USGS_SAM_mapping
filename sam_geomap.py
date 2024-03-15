@@ -652,11 +652,11 @@ class MaskManager:
                     ground_truth_flat = ground_truth.flatten()
                     
                     # Calculate metrics
-                    accuracy_temp = accuracy_score(ground_truth_flat, model_output_flat, average='weighted')
-                    precision_temp = precision_score(ground_truth_flat, model_output_flat, average='weighted')
-                    recall_temp = recall_score(ground_truth_flat, model_output_flat, average='weighted')
-                    f1_temp = f1_score(ground_truth_flat, model_output_flat, average='weighted')
-                    iou_temp = jaccard_score(ground_truth_flat, model_output_flat, average='weighted')
+                    #accuracy_temp = accuracy_score(ground_truth_flat, model_output_flat, average='weighted')
+                    precision_temp = precision_score(ground_truth_flat, model_output_flat)
+                    recall_temp = recall_score(ground_truth_flat, model_output_flat)
+                    f1_temp = f1_score(ground_truth_flat, model_output_flat)
+                    iou_temp = jaccard_score(ground_truth_flat, model_output_flat)
                     
                     accuracy.append(accuracy_temp)
                     precision.append(precision_temp)
