@@ -644,24 +644,27 @@ class MaskManager:
                 model_output_paths = find_file_by_pattern(all_model_outputs,type)
                 model_output_path = model_output_paths[0] if model_output_paths else None
                 
-                model_output = read_binary_raster(model_output_path)
-                ground_truth = read_binary_raster(ground_truth_path)
-                
-                model_output_flat = model_output.flatten()
-                ground_truth_flat = ground_truth.flatten()
-                
-                # Calculate metrics
-                accuracy_temp = accuracy_score(ground_truth_flat, model_output_flat)
-                precision_temp = precision_score(ground_truth_flat, model_output_flat)
-                recall_temp = recall_score(ground_truth_flat, model_output_flat)
-                f1_temp = f1_score(ground_truth_flat, model_output_flat)
-                iou_temp = jaccard_score(ground_truth_flat, model_output_flat)
-                
-                accuracy.append(accuracy_temp)
-                precision.append(precision_temp)
-                recall.append(recall_temp)
-                f1.append(f1_temp)
-                iou.append(iou_temp)
+                if model_output_path and ground_truth_path:
+                    model_output = read_binary_raster(model_output_path)
+                    ground_truth = read_binary_raster(ground_truth_path)
+                    
+                    model_output_flat = model_output.flatten()
+                    ground_truth_flat = ground_truth.flatten()
+                    
+                    # Calculate metrics
+                    accuracy_temp = accuracy_score(ground_truth_flat, model_output_flat)
+                    precision_temp = precision_score(ground_truth_flat, model_output_flat)
+                    recall_temp = recall_score(ground_truth_flat, model_output_flat)
+                    f1_temp = f1_score(ground_truth_flat, model_output_flat)
+                    iou_temp = jaccard_score(ground_truth_flat, model_output_flat)
+                    
+                    accuracy.append(accuracy_temp)
+                    precision.append(precision_temp)
+                    recall.append(recall_temp)
+                    f1.append(f1_temp)
+                    iou.append(iou_temp)
+                else:
+                    continue
                 
         self.accuracy = accuracy
         self.precision = precision
