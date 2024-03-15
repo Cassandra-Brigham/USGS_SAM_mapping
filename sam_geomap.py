@@ -635,7 +635,7 @@ class MaskManager:
         iou = []
         
         for unit in self.unit_names:
-            ground_truth_paths = find_file_by_pattern(self.unit_masks, unit)
+            ground_truth_paths = find_file_by_pattern(self.file_manager.folder+self.file_manager.location+'/Unit_masks/', unit)
             ground_truth_path = ground_truth_paths[0] if ground_truth_paths else None
             all_model_outputs_dir = self.file_manager.folder+self.file_manager.location+'/ML_output/'
             all_model_outputs = find_file_by_pattern(all_model_outputs_dir, unit)
