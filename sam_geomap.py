@@ -527,15 +527,30 @@ class MaskManager:
         self.iou = None
     
     def get_unit_files(self):
-        def find_filenames_matching_strings(file_paths, pattern1, pattern2):
-            matching_filenames = []
-            for file_path in file_paths:
-                filename = os.path.basename(file_path)
-                if pattern1 in filename or pattern2 in filename:
-                    matching_filenames.append(filename)
-            return matching_filenames
+        def find_files_by_two_patterns(directory, pattern1, pattern2):
+            """
+            Search for files in a given directory that contain both of the specified patterns in their filename.
+            
+            Parameters:
+            - directory: Path to the directory to search within.
+            - pattern1: The first pattern to look for in the filenames.
+            - pattern2: The second pattern to look for in the filenames.
+            
+            Returns:
+            - A list of filenames that contain both of the patterns.
+            """
+            matching_files = []
+            # List all files and directories in the given directory
+            for filename in os.listdir(directory):
+                # Construct the full path to the item
+                full_path = os.path.join(directory, filename)
+                # Check if it is a file and if both of the patterns are in the filename
+                if os.path.isfile(full_path) and (pattern1 in filename and pattern2 in filename):
+                    # If a matching file is found, append its full path to the list
+                    matching_files.append(full_path)
+            return matching_files
     
-        self.unit_files=[find_filenames_matching_strings(self.file_manager.folder+self.file_manager.location+'/Units/',a,'.shp')[0] for a in self.prompt_manager.geologic_units if find_filenames_matching_strings(self.file_manager.folder+self.file_manager.location+'/Units/',a,'.shp')]
+        self.unit_files = [find_files_by_two_patterns(self.file_manager.folder+self.file_manager.location+'/Units/',a,'.shp')[0] for a in self.prompt_manager.geologic_units if find_files_by_two_patterns(self.file_manager.folder+self.file_manager.location+'/Units/',a,'.shp')]
         self.unit_names = [os.path.basename(a)[:-len(".shp")] for a in self.unit_files]
         self.unit_masks = [self.file_manager.folder+self.file_manager.location+'/Unit_masks/'+a+'_binary_mask.tif' for a in self.unit_names]
     
