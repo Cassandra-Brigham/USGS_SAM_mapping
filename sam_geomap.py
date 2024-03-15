@@ -645,9 +645,10 @@ class MaskManager:
                     model_output = read_binary_raster(model_output_path)
                     ground_truth = read_binary_raster(ground_truth_path)
                     
-                    model_output_flat = model_output.flatten()
+                    model_output_flat = model_output.flatten()/255
+                    model_output_flat = model_output_flat.astype('uint8')
                     ground_truth_flat = ground_truth.flatten()
-                    
+
                     # Compute confusion matrix elements
                     tn, fp, fn, tp = confusion_matrix(ground_truth_flat, model_output_flat, labels=[0, 1]).ravel()
 
@@ -656,6 +657,7 @@ class MaskManager:
                     precision = precision_score(ground_truth_flat, model_output_flat, zero_division=0)
                     recall = recall_score(ground_truth_flat, model_output_flat, zero_division=0)
                     f1 = f1_score(ground_truth_flat, model_output_flat, zero_division=0)
+                    iou_temp = jaccard_score(ground_truth_flat, model_output_flat)
 
                     metrics_temp = {
                         'True Negatives': tn,
@@ -665,7 +667,8 @@ class MaskManager:
                         'Accuracy': accuracy,
                         'Precision': precision,
                         'Recall': recall,
-                        'F1 Score': f1
+                        'F1 Score': f1,
+                        'IoU': iou_temp,
                     }
 
                     metrics.append(metrics_temp)
