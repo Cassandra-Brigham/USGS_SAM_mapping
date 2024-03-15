@@ -641,7 +641,7 @@ class MaskManager:
             all_model_outputs = find_file_by_pattern(all_model_outputs_dir, unit)
             
             for type in self.sam_manager.list_image_types:
-                model_output_paths = find_file_by_pattern(all_model_outputs,type)
+                model_output_paths = [s for s in all_model_outputs if type in s]
                 model_output_path = model_output_paths[0] if model_output_paths else None
                 
                 if model_output_path and ground_truth_path:
