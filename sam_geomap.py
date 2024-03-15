@@ -9,7 +9,7 @@ import geopandas as gpd
 from osgeo import gdal, osr, gdalconst
 import matplotlib.pyplot as plt
 from scipy.ndimage import gaussian_filter
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, jaccard_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, jaccard_score, confusion_matrix
 
 
 class FileManager:
@@ -521,11 +521,12 @@ class MaskManager:
         self.mask_crs = None
         self.mask_width = None
         self.mask_height = None
-        self.accuracy = None
-        self.precision = None
-        self.recall = None
-        self.f1 = None
-        self.iou = None
+        self.metrics = None
+        #self.accuracy = None
+        #self.precision = None
+        #self.recall = None
+        #self.f1 = None
+        #self.iou = None
     
     def get_unit_files(self):
         def find_files_by_two_patterns(directory, pattern1, pattern2):
@@ -628,11 +629,7 @@ class MaskManager:
                     matching_files.append(full_path)
             return matching_files
         
-        accuracy = []
-        precision = []
-        recall = []
-        f1 = []
-        iou = []
+        metrics = []
         
         for unit in self.unit_names:
             ground_truth_paths = find_file_by_pattern(self.file_manager.folder+self.file_manager.location+'/Unit_masks/', unit)
@@ -651,23 +648,30 @@ class MaskManager:
                     model_output_flat = model_output.flatten()
                     ground_truth_flat = ground_truth.flatten()
                     
+                    # Compute confusion matrix elements
+                    tn, fp, fn, tp = confusion_matrix(ground_truth_flat, model_output_flat, labels=[0, 1]).ravel()
+
                     # Calculate metrics
-                    #accuracy_temp = accuracy_score(ground_truth_flat, model_output_flat, average='weighted')
-                    precision_temp = precision_score(ground_truth_flat, model_output_flat)
-                    recall_temp = recall_score(ground_truth_flat, model_output_flat)
-                    f1_temp = f1_score(ground_truth_flat, model_output_flat)
-                    iou_temp = jaccard_score(ground_truth_flat, model_output_flat)
+                    accuracy = accuracy_score(ground_truth_flat, model_output_flat)
+                    precision = precision_score(ground_truth_flat, model_output_flat, zero_division=0)
+                    recall = recall_score(ground_truth_flat, model_output_flat, zero_division=0)
+                    f1 = f1_score(ground_truth_flat, model_output_flat, zero_division=0)
+
+                    metrics_temp = {
+                        'True Negatives': tn,
+                        'False Positives': fp,
+                        'False Negatives': fn,
+                        'True Positives': tp,
+                        'Accuracy': accuracy,
+                        'Precision': precision,
+                        'Recall': recall,
+                        'F1 Score': f1
+                    }
+
+                    metrics.append(metrics_temp)
                     
-                    accuracy.append(accuracy_temp)
-                    precision.append(precision_temp)
-                    recall.append(recall_temp)
-                    f1.append(f1_temp)
-                    iou.append(iou_temp)
                 else:
                     continue
                 
-        self.accuracy = accuracy
-        self.precision = precision
-        self.recall = recall
-        self.f1 = f1
-        self.iou = iou
+        self.metrics = metrics
+        
