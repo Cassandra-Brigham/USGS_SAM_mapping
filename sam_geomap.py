@@ -166,84 +166,38 @@ class RasterManager:
         self.make_three_band_image(input_raster[:-len(".tif")]+'_crop.tif', output_raster)
 
     def gaussian_topo_data(self, scale):
-        def get_utm_zone(lon):
-            """
-            Calculate UTM zone from longitude.
-            """
-            return int((lon + 180) / 6) + 1
-
-        def warp_raster(input_raster, output_raster, dst_srs):
-            """
-            Warp a raster to the specified coordinate reference system.
-            """
-            warp_options = gdal.WarpOptions(dstSRS=dst_srs)
-            gdal.Warp(destNameOrDestDS=output_raster, srcDSOrSrcDSTab=input_raster, options=warp_options)
-
-        def identify_crs(dataset):
-            """
-            Identify the CRS of the dataset and determine if it's in longitude/latitude or meters.
-            """
-            crs = osr.SpatialReference()
-            crs.ImportFromWkt(dataset.GetProjection())
-            if crs.IsGeographic():
-                return 'geographic'  # CRS is in longitude and latitude
-            elif crs.IsProjected():
-                return 'projected'  # CRS is in meters
-            else:
-                return 'unknown'
 
         def apply_gaussian_filter(input_raster, output_raster, input_scale):
+            # Open input raster
             dataset = gdal.Open(input_raster, gdal.GA_ReadOnly)
             if dataset is None:
-                print(f"Error: Could not open input raster {input_raster}.")
+                print("Error: Could not open input raster.")
                 return
-            
-            initial_crs_type = identify_crs(dataset)
-            print(f"Initial CRS is {initial_crs_type}.")  # Identifies the initial CRS type
 
-            if initial_crs_type == 'geographic':
-                gt = dataset.GetGeoTransform()
-                center_lon = gt[0] + (dataset.RasterXSize/2) * gt[1] + (dataset.RasterYSize/2) * gt[2]
-                utm_zone = get_utm_zone(center_lon)
-                is_northern = int(center_lon > 0)
-                utm_crs = f"+proj=utm +zone={utm_zone} +north={is_northern} +datum=WGS84 +units=m"
-                
-                temp_utm_raster = 'temp_utm.tif'
-                warp_raster(input_raster, temp_utm_raster, utm_crs)
-                
-                dataset = gdal.Open(temp_utm_raster, gdal.GA_ReadOnly)
-                if dataset is None:
-                    print(f"Error: Could not open warped UTM raster {temp_utm_raster}.")
-                    return
-            else:
-                temp_utm_raster = input_raster  # If no projection needed, proceed with the original dataset
+            # Get raster dimensions
+            rows = dataset.RasterYSize
+            cols = dataset.RasterXSize
 
+            # Read raster data
+            band = dataset.GetRasterBand(1)
+            data = band.ReadAsArray()
+
+            # Apply Gaussian filter with 5-meter scale
+            sigma = input_scale / dataset.GetGeoTransform()[1]  # Convert 5 meters to pixels
+            filtered_data = gaussian_filter(data, sigma=sigma)
+
+            # Write filtered data to output raster
             driver = gdal.GetDriverByName("GTiff")
-            temp_filtered_dataset = driver.Create('temp_filtered.tif', dataset.RasterXSize, dataset.RasterYSize, 3, gdal.GDT_Float32)
-            if temp_filtered_dataset is None:
-                print("Error: Could not create temporary filtered dataset.")
-                if initial_crs_type == 'geographic':
-                    driver.Delete(temp_utm_raster)  # Clean up if we created a temporary UTM raster
-                return
+            output_dataset = driver.Create(output_raster, cols, rows, 1, gdal.GDT_Float32)
+            output_dataset.GetRasterBand(1).WriteArray(filtered_data)
 
-            temp_filtered_dataset.SetProjection(dataset.GetProjection())
-            temp_filtered_dataset.SetGeoTransform(dataset.GetGeoTransform())
+            # Set projection and transformation
+            output_dataset.SetProjection(dataset.GetProjection())
+            output_dataset.SetGeoTransform(dataset.GetGeoTransform())
 
-            for band in range(1, 4):  # Assuming 3 bands
-                data = dataset.GetRasterBand(band).ReadAsArray()
-                sigma = input_scale / dataset.GetGeoTransform()[1]  # Assuming scale is appropriate for the dataset's units
-                filtered_data = gaussian_filter(data, sigma=sigma)
-                temp_filtered_dataset.GetRasterBand(band).WriteArray(filtered_data)
-
-            temp_filtered_dataset = None  # Close and flush to ensure data is written
-
-            # Warp the filtered raster back to EPSG:4326
-            warp_raster('temp_filtered.tif', output_raster, 'EPSG:4326')
-
-            # Clean up temporary files if any projection was applied
-            if initial_crs_type == 'geographic':
-                driver.Delete(temp_utm_raster)
-            driver.Delete('temp_filtered.tif')
+            # Close datasets
+            dataset = None
+            output_dataset = None
             
         apply_gaussian_filter(self.file_manager.input_dem_file, self.file_manager.gaussian_dem, scale)
     
