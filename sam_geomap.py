@@ -195,7 +195,7 @@ class RasterManager:
         def apply_gaussian_filter(input_raster, output_raster, input_scale):
             dataset = gdal.Open(input_raster, gdal.GA_ReadOnly)
             if dataset is None:
-                print("Error: Could not open input raster.")
+                print(f"Error: Could not open input raster {input_raster}.")
                 return
             
             initial_crs_type = identify_crs(dataset)
@@ -212,12 +212,20 @@ class RasterManager:
                 warp_raster(input_raster, temp_utm_raster, utm_crs)
                 
                 dataset = gdal.Open(temp_utm_raster, gdal.GA_ReadOnly)
+                if dataset is None:
+                    print(f"Error: Could not open warped UTM raster {temp_utm_raster}.")
+                    return
             else:
-                temp_utm_raster = input_raster
+                temp_utm_raster = input_raster  # If no projection needed, proceed with the original dataset
 
-            # Process each band separately
             driver = gdal.GetDriverByName("GTiff")
             temp_filtered_dataset = driver.Create('temp_filtered.tif', dataset.RasterXSize, dataset.RasterYSize, 3, gdal.GDT_Float32)
+            if temp_filtered_dataset is None:
+                print("Error: Could not create temporary filtered dataset.")
+                if initial_crs_type == 'geographic':
+                    driver.Delete(temp_utm_raster)  # Clean up if we created a temporary UTM raster
+                return
+
             temp_filtered_dataset.SetProjection(dataset.GetProjection())
             temp_filtered_dataset.SetGeoTransform(dataset.GetGeoTransform())
 
@@ -227,7 +235,7 @@ class RasterManager:
                 filtered_data = gaussian_filter(data, sigma=sigma)
                 temp_filtered_dataset.GetRasterBand(band).WriteArray(filtered_data)
 
-            temp_filtered_dataset = None  # Close and flush
+            temp_filtered_dataset = None  # Close and flush to ensure data is written
 
             # Warp the filtered raster back to EPSG:4326
             warp_raster('temp_filtered.tif', output_raster, 'EPSG:4326')
