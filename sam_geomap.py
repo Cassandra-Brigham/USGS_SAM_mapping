@@ -201,7 +201,6 @@ class RasterManager:
             initial_crs_type = identify_crs(dataset)
             print(f"Initial CRS is {initial_crs_type}.")  # Identifies the initial CRS type
 
-            # Project to UTM only if the initial CRS is not projected
             if initial_crs_type == 'geographic':
                 gt = dataset.GetGeoTransform()
                 center_lon = gt[0] + (dataset.RasterXSize/2) * gt[1] + (dataset.RasterYSize/2) * gt[2]
@@ -212,34 +211,31 @@ class RasterManager:
                 temp_utm_raster = 'temp_utm.tif'
                 warp_raster(input_raster, temp_utm_raster, utm_crs)
                 
-                # Reopen the dataset from the temporary UTM raster for filtering
                 dataset = gdal.Open(temp_utm_raster, gdal.GA_ReadOnly)
             else:
-                temp_utm_raster = input_raster  # No projection needed, proceed with the original
+                temp_utm_raster = input_raster
 
-            band = dataset.GetRasterBand(1)
-            data = band.ReadAsArray()
-
-            # Apply Gaussian filter
-            sigma = input_scale / dataset.GetGeoTransform()[1]  # Assuming scale is appropriate for the dataset's units
-            filtered_data = gaussian_filter(data, sigma=sigma)
-
-            # Create temporary filtered raster (always in UTM or original projected CRS)
-            temp_filtered_raster = 'temp_filtered.tif'
+            # Process each band separately
             driver = gdal.GetDriverByName("GTiff")
-            temp_filtered_dataset = driver.Create(temp_filtered_raster, dataset.RasterXSize, dataset.RasterYSize, 1, gdal.GDT_Float32)
-            temp_filtered_dataset.GetRasterBand(1).WriteArray(filtered_data)
+            temp_filtered_dataset = driver.Create('temp_filtered.tif', dataset.RasterXSize, dataset.RasterYSize, 3, gdal.GDT_Float32)
             temp_filtered_dataset.SetProjection(dataset.GetProjection())
             temp_filtered_dataset.SetGeoTransform(dataset.GetGeoTransform())
+
+            for band in range(1, 4):  # Assuming 3 bands
+                data = dataset.GetRasterBand(band).ReadAsArray()
+                sigma = input_scale / dataset.GetGeoTransform()[1]  # Assuming scale is appropriate for the dataset's units
+                filtered_data = gaussian_filter(data, sigma=sigma)
+                temp_filtered_dataset.GetRasterBand(band).WriteArray(filtered_data)
+
             temp_filtered_dataset = None  # Close and flush
 
             # Warp the filtered raster back to EPSG:4326
-            warp_raster(temp_filtered_raster, output_raster, 'EPSG:4326')
+            warp_raster('temp_filtered.tif', output_raster, 'EPSG:4326')
 
             # Clean up temporary files if any projection was applied
             if initial_crs_type == 'geographic':
                 driver.Delete(temp_utm_raster)
-            driver.Delete(temp_filtered_raster)
+            driver.Delete('temp_filtered.tif')
             
         apply_gaussian_filter(self.file_manager.input_dem_file, self.file_manager.gaussian_dem, scale)
     
