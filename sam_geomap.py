@@ -165,40 +165,64 @@ class RasterManager:
         self.crop_raster(input_raster[:-len(".tif")]+'_warp.tif',input_raster[:-len(".tif")]+'_crop.tif',bounds)
         self.make_three_band_image(input_raster[:-len(".tif")]+'_crop.tif', output_raster)
 
-    @staticmethod
-    def apply_gaussian_filter(input_raster, output_raster, input_scale):
-        # Open input raster
-        dataset = gdal.Open(input_raster, gdal.GA_ReadOnly)
-        if dataset is None:
-            print("Error: Could not open input raster.")
-            return
-
-        # Get raster dimensions
-        rows = dataset.RasterYSize
-        cols = dataset.RasterXSize
-
-        # Read raster data
-        band = dataset.GetRasterBand(1)
-        data = band.ReadAsArray()
-
-        # Apply Gaussian filter with 5-meter scale
-        sigma = input_scale / dataset.GetGeoTransform()[1]  # Convert 5 meters to pixels
-        filtered_data = gaussian_filter(data, sigma=sigma)
-
-        # Write filtered data to output raster
-        driver = gdal.GetDriverByName("GTiff")
-        output_dataset = driver.Create(output_raster, cols, rows, 1, gdal.GDT_Float32)
-        output_dataset.GetRasterBand(1).WriteArray(filtered_data)
-
-        # Set projection and transformation
-        output_dataset.SetProjection(dataset.GetProjection())
-        output_dataset.SetGeoTransform(dataset.GetGeoTransform())
-
-        # Close datasets
-        dataset = None
-        output_dataset = None
-
     def gaussian_topo_data(self, scale):
+        def get_utm_zone(lon):
+            """
+            Calculate UTM zone from longitude
+            """
+            return int((lon + 180) / 6) + 1
+
+        def warp_raster(input_raster, output_raster, dst_srs):
+            """
+            Warp a raster to the specified coordinate reference system.
+            """
+            warp_options = gdal.WarpOptions(dstSRS=dst_srs)
+            gdal.Warp(destNameOrDestDS=output_raster, srcDSOrSrcDSTab=input_raster, options=warp_options)
+
+        def apply_gaussian_filter(input_raster, output_raster, input_scale):
+            # Determine UTM zone and construct CRS string
+            dataset = gdal.Open(input_raster)
+            if dataset is None:
+                print("Error: Could not open input raster.")
+                return
+            
+            gt = dataset.GetGeoTransform()
+            center_lon = gt[0] + (dataset.RasterXSize/2) * gt[1] + (dataset.RasterYSize/2) * gt[2]
+            center_lat = gt[3] + (dataset.RasterXSize/2) * gt[4] + (dataset.RasterYSize/2) * gt[5]
+            utm_zone = get_utm_zone(center_lon)
+            is_northern = int(center_lat > 0)
+            utm_crs = f"+proj=utm +zone={utm_zone} +datum=WGS84 +units=m +north={is_northern}"
+            
+            # Warp raster to UTM
+            temp_utm_raster = 'temp_utm.tif'
+            warp_raster(input_raster, temp_utm_raster, utm_crs)
+            
+            # Open the UTM warped raster
+            utm_dataset = gdal.Open(temp_utm_raster, gdal.GA_ReadOnly)
+            band = utm_dataset.GetRasterBand(1)
+            data = band.ReadAsArray()
+
+            # Apply Gaussian filter
+            sigma = input_scale / utm_dataset.GetGeoTransform()[1]  # Convert scale to pixels
+            filtered_data = gaussian_filter(data, sigma=sigma)
+
+            # Create a temporary filtered UTM raster
+            temp_filtered_utm_raster = 'temp_filtered_utm.tif'
+            driver = gdal.GetDriverByName("GTiff")
+            temp_filtered_dataset = driver.Create(temp_filtered_utm_raster, utm_dataset.RasterXSize, utm_dataset.RasterYSize, 1, gdal.GDT_Float32)
+            temp_filtered_dataset.GetRasterBand(1).WriteArray(filtered_data)
+            temp_filtered_dataset.SetProjection(utm_dataset.GetProjection())
+            temp_filtered_dataset.SetGeoTransform(utm_dataset.GetGeoTransform())
+            temp_filtered_dataset = None  # Close and flush
+
+            # Warp the filtered raster back to EPSG:4326
+            warp_raster(temp_filtered_utm_raster, output_raster, 'EPSG:4326')
+
+            # Clean up temporary files
+            driver.Delete(temp_utm_raster)
+            driver.Delete(temp_filtered_utm_raster)
+            dataset = None  # Ensure the input dataset is closed
+
         self.apply_gaussian_filter(self.file_manager.input_dem_file, self.file_manager.gaussian_dem, scale)
     
     def prep_topo_data(self):
