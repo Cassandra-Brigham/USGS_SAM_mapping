@@ -158,13 +158,13 @@ class RasterManager:
 
             with rasterio.open(out_image_path, 'w', **profile) as dst:
                 dst.write(gray_3band)
-    
-    
+                
+    """
     def prep_data1(self, input_raster, output_raster, bounds):
         self.warp_raster(input_raster, input_raster[:-len(".tif")]+'_warp.tif')
         self.crop_raster(input_raster[:-len(".tif")]+'_warp.tif',input_raster[:-len(".tif")]+'_crop.tif',bounds)
         self.make_three_band_image(input_raster[:-len(".tif")]+'_crop.tif', output_raster)
-
+        """
     def gaussian_topo_data(self, scale):
 
         def apply_gaussian_filter(input_raster, output_raster, input_scale):
@@ -202,11 +202,17 @@ class RasterManager:
         apply_gaussian_filter(self.file_manager.input_dem_file, self.file_manager.gaussian_dem, scale)
     
     def prep_topo_data(self):
-        self.prep_data1(self.file_manager.input_dem_file, self.file_manager.prep_dem, self.bounds)
-        self.prep_data1(self.file_manager.output_hillshade_file, self.file_manager.prep_hillshade, self.bounds)
-        self.prep_data1(self.file_manager.output_roughness_file, self.file_manager.prep_roughness, self.bounds)
-        self.prep_data1(self.file_manager.output_slope_file, self.file_manager.prep_slope, self.bounds)
-        self.prep_data1(self.file_manager.gaussian_dem, self.file_manager.prep_gaussian_dem, self.bounds)
+        
+        def prep_data(input_raster, output_raster, bounds):
+            self.warp_raster(input_raster, input_raster[:-len(".tif")]+'_warp.tif')
+            self.crop_raster(input_raster[:-len(".tif")]+'_warp.tif',input_raster[:-len(".tif")]+'_crop.tif',bounds)
+            self.make_three_band_image(input_raster[:-len(".tif")]+'_crop.tif', output_raster)
+        
+        prep_data(self.file_manager.input_dem_file, self.file_manager.prep_dem, self.bounds)
+        prep_data(self.file_manager.output_hillshade_file, self.file_manager.prep_hillshade, self.bounds)
+        prep_data(self.file_manager.output_roughness_file, self.file_manager.prep_roughness, self.bounds)
+        prep_data(self.file_manager.output_slope_file, self.file_manager.prep_slope, self.bounds)
+        prep_data(self.file_manager.gaussian_dem, self.file_manager.prep_gaussian_dem, self.bounds)
     
 class PlanetManager:
     def __init__(self, file_manager,raster_manager):
