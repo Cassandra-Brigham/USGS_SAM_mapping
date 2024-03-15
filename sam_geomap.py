@@ -455,17 +455,31 @@ class SAMManager:
                     self.sam.predict(point_coords, point_labels=labels, point_crs="EPSG:4326", output=output_path)
 
     def sam_predict_multiple(self):
-        def find_filenames_matching_string(file_paths, pattern):
-            matching_filenames = []
-            for file_path in file_paths:
-                filename = os.path.basename(file_path)
-                if pattern in filename:
-                    matching_filenames.append(filename)
-            return matching_filenames
+        def find_file_by_pattern(directory, pattern):
+            """
+            Search for files in a given directory that contain the pattern in their filename.
+            
+            Parameters:
+            - directory: Path to the directory to search within.
+            - pattern: The pattern to look for in the filenames.
+            
+            Returns:
+            - A list of filenames that contain the pattern.
+            """
+            matching_files = []
+            # List all files and directories in the given directory
+            for filename in os.listdir(directory):
+                # Construct the full path to the item
+                full_path = os.path.join(directory, filename)
+                # Check if it is a file and if the pattern is in the filename
+                if os.path.isfile(full_path) and pattern in filename:
+                    # If a matching file is found, append its full path to the list
+                    matching_files.append(full_path)
+            return matching_files
 
         for a in self.list_image_types:
             try:
-                matching_image = find_filenames_matching_string(self.file_manager.ML_location, a)
+                matching_image = find_file_by_pattern(self.file_manager.ML_location, a)
                 if not matching_image:
                     print(f"No matching images found for type {a}.")
                     continue
