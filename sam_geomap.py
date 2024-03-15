@@ -635,10 +635,14 @@ class MaskManager:
         iou = []
         
         for unit in self.unit_names:
-            ground_truth_path = find_file_by_pattern(self.unit_masks, unit)
-            all_model_outputs = find_file_by_pattern(self.file_manager.folder+self.file_manager.location+'/ML_output/',unit)
+            ground_truth_paths = find_file_by_pattern(self.unit_masks, unit)
+            ground_truth_path = ground_truth_paths[0] if ground_truth_paths else None
+            all_model_outputs_dir = self.file_manager.folder+self.file_manager.location+'/ML_output/'
+            all_model_outputs = find_file_by_pattern(all_model_outputs_dir, unit)
+            
             for type in self.sam_manager.list_image_types:
-                model_output_path = find_file_by_pattern(all_model_outputs,type)
+                model_output_paths = find_file_by_pattern(all_model_outputs,type)
+                model_output_path = model_output_paths[0] if model_output_paths else None
                 
                 model_output = read_binary_raster(model_output_path)
                 ground_truth = read_binary_raster(ground_truth_path)
