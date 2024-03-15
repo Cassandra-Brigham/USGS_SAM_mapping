@@ -223,7 +223,7 @@ class RasterManager:
             driver.Delete(temp_filtered_utm_raster)
             dataset = None  # Ensure the input dataset is closed
 
-        self.apply_gaussian_filter(self.file_manager.input_dem_file, self.file_manager.gaussian_dem, scale)
+        apply_gaussian_filter(self.file_manager.input_dem_file, self.file_manager.gaussian_dem, scale)
     
     def prep_topo_data(self):
         self.prep_data1(self.file_manager.input_dem_file, self.file_manager.prep_dem, self.bounds)
