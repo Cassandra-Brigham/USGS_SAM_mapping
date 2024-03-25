@@ -161,12 +161,8 @@ class RasterManager:
             with rasterio.open(out_image_path, 'w', **profile) as dst:
                 dst.write(gray_3band)
                 
-    """
-    def prep_data1(self, input_raster, output_raster, bounds):
-        self.warp_raster(input_raster, input_raster[:-len(".tif")]+'_warp.tif')
-        self.crop_raster(input_raster[:-len(".tif")]+'_warp.tif',input_raster[:-len(".tif")]+'_crop.tif',bounds)
-        self.make_three_band_image(input_raster[:-len(".tif")]+'_crop.tif', output_raster)
-        """
+
+
     def gaussian_topo_data(self, scale):
 
         def apply_gaussian_filter(input_raster, output_raster, input_scale):
