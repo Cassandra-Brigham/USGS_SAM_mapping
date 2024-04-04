@@ -429,12 +429,7 @@ class RasterManager:
         return np.exp(-0.5 * ((value - mean) ** 2 / std ** 2))
 
     def apply_fuzzy_gaussian_membership_to_3band(self,input_raster, output_raster, mean, std):
-        """
-        Apply a fuzzy Gaussian membership function to each pixel of each band in the input raster
-        and save the results in an output raster with three bands.
-        The means and stds arguments should be tuples or lists containing the mean and standard deviation
-        for each band, e.g., means=(mean1, mean2, mean3) and stds=(std1, std2, std3).
-        """
+        
         means = [mean,mean,mean]
         stds = [std,std,std]
         # Open the input raster
@@ -707,12 +702,7 @@ class PlanetManager:
         self.crop_raster(self.file_manager.input_planet[:-len(".tif")]+'_ndwi_gaussian_orig_warp.tif',self.file_manager.ndwi_3band_gaussian,self.raster_manager.bounds)
 
     def apply_fuzzy_gaussian_membership_to_3band(self,input_raster, output_raster, means, stds):
-        """
-        Apply a fuzzy Gaussian membership function to each pixel of each band in the input raster
-        and save the results in an output raster with three bands.
-        The means and stds arguments should be tuples or lists containing the mean and standard deviation
-        for each band, e.g., means=(mean1, mean2, mean3) and stds=(std1, std2, std3).
-        """
+        
         # Open the input raster
         dataset = gdal.Open(input_raster, gdal.GA_ReadOnly)
         if dataset is None:
