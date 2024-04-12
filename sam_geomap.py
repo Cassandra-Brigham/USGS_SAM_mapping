@@ -306,7 +306,7 @@ class RasterManager:
             utm_crs = CRS.from_epsg(utm_crs_list[0].code)
             return utm_crs
         
-        with rasterio.open(file_manager.input_dem) as src:
+        with rasterio.open(self.file_manager.input_dem) as src:
             # Get bounds of the raster
             bounds = src.bounds
             crs = src.crs
