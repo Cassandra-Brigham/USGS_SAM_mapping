@@ -781,12 +781,14 @@ class SAMManager:
                 }
         self.list_image_types = None
         
-    def initiate_sam(self, sam_kwargs, auto = False):
+    def initiate_sam(self, kwargs, auto = False):
         self.sam = SamGeo(
-        checkpoint_dir= "/content/drive/MyDrive/USGS_ML_2024/geomap_10_examples/checkpoint/",
         model_type="vit_h",
         automatic=auto,
-        **sam_kwargs
+        device=None,
+        checkpoint_dir=None,
+        sam_kwargs=None,
+        **kwargs
         )
 
         self.list_image_types = ['DTM','hillshade','roughness','slope','DTM_Gaussian','Planet_rgb','Planet_ave','Planet_ndvi','Planet_ndwi','Planet_rgb_Gaussian','Planet_ave_Gaussian','Planet_ndvi_Gaussian','Planet_ndwi_Gaussian']
