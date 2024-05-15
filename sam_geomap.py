@@ -781,13 +781,13 @@ class SAMManager:
                 }
         self.list_image_types = None
         
-    def initiate_sam(self, kwargs, auto = False):
+    def initiate_sam(self, kwargs, model="vit_h", auto = False, sam_device = None, sam_checkpoint_dir = None, args = None):
         self.sam = SamGeo(
-        model_type="vit_h",
+        model_type=model,
         automatic=auto,
-        device=None,
-        checkpoint_dir=None,
-        sam_kwargs=None,
+        device=sam_device,
+        checkpoint_dir=sam_checkpoint_dir,
+        sam_kwargs=args,
         **kwargs
         )
 
