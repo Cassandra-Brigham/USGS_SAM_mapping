@@ -1,0 +1,19 @@
+name: sam_geomap-env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - mamba
+  - python=3.9
+  - segment-geospatial
+  - ipykernel
+  - numpy
+  - rasterio
+  - geopandas
+  - GDAL
+  - matplotlib
+  - scipy
+  - scikit-learn
+  - pip:
+    - leafmap
+  
