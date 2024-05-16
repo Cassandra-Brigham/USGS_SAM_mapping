@@ -309,10 +309,10 @@ class RasterManager:
         with rasterio.open(self.file_manager.input_dem) as src:
             # Get bounds of the raster
             bounds = src.bounds
-            crs = src.crs
+            topo_raster_crs = src.crs
             
         geometry = box(*bounds)
-        gdf = gpd.GeoDataFrame(pd.Series(geometry,name='geometry'),geometry='geometry',crs=crs)
+        gdf = gpd.GeoDataFrame(pd.Series(geometry,name='geometry'),geometry='geometry',crs=topo_raster_crs)
         
         gdf_4326 = gdf.to_crs(epsg=4326)
         bounds_4326 = gdf_4326.bounds
@@ -334,6 +334,8 @@ class RasterManager:
         bbox = BoundingBox(left=list(bounds_4326_cropped.iloc[0,:])[0], bottom=list(bounds_4326_cropped.iloc[0,:])[1], right=list(bounds_4326_cropped.iloc[0,:])[2], top=list(bounds_4326_cropped.iloc[0,:])[3])
         
         self.bounds = bbox
+
+        return topo_raster_crs
         
     @staticmethod
     def crop_raster(input_raster, output_raster, bounds):
